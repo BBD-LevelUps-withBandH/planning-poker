@@ -1,0 +1,475 @@
+# node modules
+# "eslint": "8.27.0",
+# "eslint-plugin-import": "^2.27.5",
+# "eslint-plugin-jest": "^26.8.7",
+# "eslint-plugin-jsdoc": "^39.3.25",
+# "eslint-plugin-n": "^15.7.0",
+# "eslint-plugin-node": "^11.1.0",
+# "eslint-plugin-promise": "^6.1.1",
+# "eslint-plugin-react": "^7.32.2",
+# "eslint-plugin-sonarjs": "^0.16.0",
+# "eslint-plugin-unicorn": "44.0.2",
+
+root: true # You can have nested eslint configs, this one is at root level
+
+env:
+  node: true
+  browser: true
+
+parser: '@babel/eslint-parser'
+
+parserOptions:
+  babelOptions:
+    presets:
+      - '@babel/preset-react'
+  sourceType: module
+  ecmaVersion: latest
+  impliedStrict: true
+
+plugins:
+  - jsdoc
+  - node
+  - sonarjs
+  - unicorn
+
+extends:
+  - eslint:recommended
+  - plugin:jsdoc/recommended
+  - plugin:node/recommended
+  - plugin:sonarjs/recommended
+  - plugin:unicorn/all
+  - plugin:react/recommended
+
+globals:
+  JSX: readonly
+
+reportUnusedDisableDirectives: true
+
+overrides:
+  - files:
+      - '**/*.test.js'
+    env:
+      jest: true
+    plugins:
+      - jest
+    extends:
+      - plugin:jest/recommended
+
+settings:
+  react:
+    version: detect
+
+rules:
+  # ! Note many rules are already included by eslint:recommended
+  # see https://eslint.org/docs/latest/rules/
+  # I encourage you to check out the website, it is really insightful to JavaScript in general.
+  # Only include them here if you want to override that behaviour.
+
+  # -----------------------------
+  # Possible Problems
+  # -----------------------------
+
+  array-callback-return: 2
+  no-await-in-loop: 2
+  no-cond-assign:
+    - 2
+    - always
+  no-constant-binary-expression: 2
+  no-constructor-return: 2
+  no-duplicate-imports: 2
+  no-promise-executor-return: 2
+  no-self-compare: 2
+  no-template-curly-in-string: 2
+  no-unmodified-loop-condition: 2 # An infinite loop in an API/website is probably a bad idea/unintended
+  no-unreachable-loop: 1
+  no-unused-private-class-members: 1
+  no-use-before-define: 2
+  require-atomic-updates: 1
+
+  # -----------------------------
+  # Suggestions
+  # -----------------------------
+
+  accessor-pairs: 2
+  arrow-body-style:
+    - 2
+    - as-needed
+  block-scoped-var: 2
+  camelcase:
+    - 2
+    - properties: never
+  class-methods-use-this: 1
+  complexity:
+    - 2
+    - 10
+  consistent-return: 0 # Embrace the type fluidity
+  consistent-this:
+    - 2
+    - _this
+  curly:
+    - 2
+    - multi-line
+  default-case: 2
+  default-case-last: 2
+  default-param-last: 2
+  dot-notation: 2
+  eqeqeq: 2
+  func-names:
+    - 2
+    - as-needed
+  func-style:
+    - 2
+    - declaration
+    - allowArrowFunctions: true
+  grouped-accessor-pairs:
+    - 2
+    - getBeforeSet
+  logical-assignment-operators: 2
+  max-nested-callbacks:
+    - 2
+    - 4
+  max-params:
+    - 2
+    - 3 # Consider objects if more than 3 args
+  new-cap:
+    - 2
+    - capIsNewExceptions:
+        - App # mini-app framework
+        - Page # mini-app framework
+        - Component # mini-app framework
+  no-alert: 2
+  no-array-constructor: 2
+  no-bitwise: 1 # Bitwise operators (like | and &) might be mistaken for logical operators (like || and &&)
+  no-caller: 2
+  no-confusing-arrow: 1
+  no-console: 2
+  no-div-regex: 2
+  # Keep the happy path in the largest scope possible! Use early-exits (in an if block) for non-happy endings.
+  # Makes your code so much more readable.
+  no-else-return: 2
+  no-empty-function: 2
+  no-eval: 2 # NEVER EVER EVAL USER INPUT
+  no-extend-native: 2
+  no-extra-bind: 2
+  no-extra-label: 2
+  no-floating-decimal: 2
+  no-implicit-coercion: 2
+  no-implicit-globals: 2
+  no-implied-eval: 2
+  no-invalid-this: 2
+  no-iterator: 2
+  no-label-var: 2
+  no-labels: 2
+  no-lone-blocks: 2
+  no-lonely-if: 2
+  no-loop-func: 2
+  no-mixed-operators: 1
+  no-multi-assign: 2
+  no-nested-ternary: 2
+  no-new: 2
+  no-new-func: 2
+  no-new-object: 2
+  no-new-wrappers: 2
+  no-octal-escape: 2
+  no-proto: 2
+  no-return-assign: 2
+  no-return-await: 0 # I've found `return await <thing>` to be useful in keeping the caller in the stack trace with no real downside
+  no-script-url: 2
+  no-sequences: 2
+  no-shadow: 1
+  no-throw-literal: 2
+  no-undef-init: 2
+  no-unneeded-ternary: 2
+  no-unused-expressions:
+    - 2
+    - allowShortCircuit: true
+  no-useless-call: 2
+  no-useless-computed-key: 2
+  no-useless-concat: 2
+  no-useless-constructor: 1
+  no-useless-rename: 2
+  no-useless-return: 2
+  no-var: 2 # Just never use var please
+  no-void: 2
+  object-shorthand: 2
+  one-var:
+    - 2
+    - uninitialized: consecutive
+      initialized: never
+  operator-assignment: 2
+  prefer-arrow-callback: 2
+  prefer-const: 2
+  prefer-destructuring:
+    - 2
+    - VariableDeclarator:
+        array: true
+        object: true
+      AssignmentExpression:
+        array: true
+        object: false # Because it's not possible...
+    - enforceForRenamedProperties: false
+  prefer-exponentiation-operator: 2
+  prefer-named-capture-group: 1
+  prefer-numeric-literals: 1
+  prefer-object-has-own: 2
+  prefer-object-spread: 2
+  prefer-regex-literals: 2
+  prefer-rest-params: 2
+  prefer-spread: 2
+  prefer-template: 2
+  quote-props:
+    - 2
+    - as-needed
+  radix: 2
+  spaced-comment: 2
+  strict: 2
+  symbol-description: 2
+  yoda:
+    - 2
+    - never
+    - exceptRange: true
+
+  # -----------------------------
+  # Layout & Formatting
+  # -----------------------------
+
+  # NOTE on array linting: the bracket and element rules are separate.
+  # Forcing newlines on brackets does not force newlines on elements.
+  # Thus you need both rules to achieve a consistent style.
+  array-bracket-newline:
+    - 2
+    - multiline: true # Enforce newlines on brackets if content is multiline
+  array-bracket-spacing: 2
+  array-element-newline: # Force newlines between elements. Helps git diff be more clear.
+    - 2
+    - ArrayExpression: always # Array literal -> always newlines if multiple elements
+      ArrayPattern: # Array destructuring
+        minItems: 3 # Only newlines if 3 or more elements, allows `const [a, b] = ...` which is often used
+  arrow-parens:
+    - 2
+    - as-needed
+  arrow-spacing: 2
+  block-spacing: 2
+  brace-style:
+    - 2
+    - 1tbs
+    - allowSingleLine: true
+  comma-dangle:
+    - 2
+    - always-multiline # For git merge conflict prevention when adding or removing items at the end
+  comma-spacing: 2
+  comma-style:
+    - 2
+    - last
+  computed-property-spacing: 2
+  dot-location:
+    - 2
+    - property
+  eol-last: 2
+  func-call-spacing: 2
+  function-call-argument-newline:
+    - 2
+    - consistent
+  function-paren-newline:
+    - 2
+    - multiline
+  generator-star-spacing: 2
+  implicit-arrow-linebreak: 2
+  indent:
+    - 2
+    - 2 # 2 spaces
+    - SwitchCase: 1 # 1x indent size
+      VariableDeclarator: first # Align to first entry
+      FunctionDeclaration:
+        parameters: first
+      FunctionExpression:
+        parameters: first
+      CallExpression:
+        arguments: first
+      # Defaults for rest
+  jsx-quotes: # For React-like apps
+    - 2
+    - prefer-single
+  key-spacing: 2
+  keyword-spacing: 2
+  linebreak-style: 2
+  lines-between-class-members:
+    - 2
+    - always
+    - exceptAfterSingleLine: true
+  max-len:
+    - 2
+    - code: 150
+      comments: 153 # Commented code wont generate an error
+      tabWidth: 4
+      ignoreTemplateLiterals: true
+      ignoreStrings: true
+      ignorePattern: '@(param|returns)' # Ignore jsdoc comments
+  max-statements-per-line: 2
+  new-parens: 2
+  no-multi-spaces: 2
+  no-multiple-empty-lines:
+    - 2
+    - max: 1
+      maxBOF: 0
+      maxEOF: 0
+  no-tabs: 2
+  no-trailing-spaces: 2
+  no-whitespace-before-property: 2
+  nonblock-statement-body-position: 2
+  # NOTE on object linting: the curly and property rules are separate.
+  # Forcing newlines on curly does not force newlines on properties.
+  # Thus you need both rules to achieve a consistent style.
+  object-curly-newline: # Enforce newlines on curly only
+    - 2
+    - multiline: true # Enforce newlines on curly if content is multiline
+  object-curly-spacing:
+    - 2
+    - always
+  object-property-newline: 2 # Force newlines between properties. Helps git diff be more clear.
+  operator-linebreak:
+    - 2
+    - before
+  padded-blocks:
+    - 2
+    - never
+  padding-line-between-statements: # Highly debatable and down to personal preference
+    - 2
+    - blankLine: always
+      prev: case
+      next: '*'
+    - blankLine: always
+      prev: class
+      next: '*'
+    - blankLine: always
+      prev: directive
+      next: '*'
+    - blankLine: always
+      prev: export
+      next: '*'
+    - blankLine: always
+      prev: function
+      next: '*'
+    - blankLine: always
+      prev: iife
+      next: '*'
+    - blankLine: always
+      prev: multiline-block-like
+      next: '*'
+  quotes:
+    - 2
+    - single
+    - avoidEscape: true
+  rest-spread-spacing: 2
+  semi: 2
+  semi-spacing: 2
+  semi-style: 2
+  space-before-blocks: 2
+  space-before-function-paren:
+    - 2
+    - anonymous: never
+      named: never
+      asyncArrow: always
+  space-in-parens: 2
+  space-infix-ops: 2
+  space-unary-ops: 2
+  switch-colon-spacing: 2
+  template-curly-spacing: 2
+  template-tag-spacing: 2
+  wrap-iife:
+    - 2
+    - inside
+  wrap-regex: 2
+  yield-star-spacing: 2
+
+  # -----------------------------
+  # Plugins
+  # -----------------------------
+
+  # node
+  # Note: remember to specify engines.node in package.json
+  # and set parserOptions.ecmaVersion in this file
+  # see https://github.com/mysticatea/eslint-plugin-node
+
+  # Possible Errors
+  node/handle-callback-err: 1
+  node/no-callback-literal: 1
+  node/no-extraneous-import: 2
+  node/no-extraneous-require: 2
+  node/no-new-require: 2
+  node/no-path-concat: 2
+  node/no-process-exit: 1
+
+  # Stylistic Issues
+  node/callback-return: 1 # How is this stylistic...
+  node/exports-style: 2
+  node/file-extension-in-import: 2 # Can be unclear when working with modules and other files like .json
+  node/global-require: 0 # Loading modules only when needed can be beneficial
+  node/no-mixed-requires: 2
+  node/no-process-env: 2
+  node/no-sync: 1 # Consider async/callbacks
+  node/prefer-global/buffer: 2
+  node/prefer-global/console: 2
+  node/prefer-global/process: 2
+  node/prefer-global/text-decoder: 2
+  node/prefer-global/text-encoder: 2
+  node/prefer-global/url-search-params: 2
+  node/prefer-global/url: 2
+  node/prefer-promises/dns: 2
+  node/prefer-promises/fs: 2
+
+  # sonarjs
+  sonarjs/cognitive-complexity: 0
+
+  # unicorn
+  unicorn/consistent-function-scoping: 0
+  unicorn/filename-case:
+    - 2
+    - cases:
+        camelCase: true
+        pascalCase: true
+      ignore:
+        - ".*\\.test\\.js$"
+  unicorn/no-array-for-each: 1
+  unicorn/no-array-reduce: 0
+  unicorn/no-null: 0
+  unicorn/no-object-as-default-parameter: 0
+  unicorn/no-this-assignment: 0 # Paired with consistent-this rule
+  unicorn/prefer-module: 0 # "ES Modules are terrible, actually" https://gist.github.com/joepie91/bca2fda868c1e8b2c2caf76af7dfcad3
+  unicorn/prevent-abbreviations: 0
+
+  # react
+  react/jsx-closing-bracket-location:
+    - 2
+    - line-aligned
+  react/jsx-curly-newline:
+    - 2
+    - multiline: require
+      singleline: forbid
+  react/jsx-curly-spacing:
+    - 2
+    - always
+  react/jsx-equals-spacing: 2
+  react/jsx-first-prop-new-line: 2
+  react/jsx-fragments: 2
+  react/jsx-indent:
+    - 2
+    - 2
+    - indentLogicalExpressions: true
+  react/jsx-indent-props:
+    - 2
+    - 2
+  react/jsx-max-props-per-line: 2
+  react/jsx-no-useless-fragment: 2
+  react/jsx-pascal-case: 2
+  react/jsx-props-no-multi-spaces: 2
+  react/jsx-tag-spacing: 2
+  react/jsx-wrap-multilines:
+    - 2
+    - declaration: parens-new-line
+      assignment: parens-new-line
+      return: parens-new-line
+      arrow: parens-new-line
+      condition: ignore
+      logical: ignore
+      prop: ignore
