@@ -1,4 +1,4 @@
-const client = require('../models/db');
+const client = require('./databaseConnection');
 const User = require('../models/user');
 
 const tableName = 'users';
