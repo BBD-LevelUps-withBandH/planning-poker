@@ -1,0 +1,13 @@
+node_modules
+keys
+.env
+CODEOWNERS
+
+# Test coverage folders
+.nyc_output
+coverage
+build
+dist
+
+# vite
+vite.config.js
