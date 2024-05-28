@@ -33,12 +33,23 @@ INSERT INTO tickets (ticket_name, room_id) VALUES
 ('Ticket 4', 3),
 ('Ticket 5', 4);
 
+-- Insert dummy data into the vote_types table
+INSERT INTO vote_types (vote) VALUES
+('1'),
+('2'),
+('3'),
+('5'),
+('8'),
+('13'),
+('??'),
+('☕');
+
 -- Insert dummy data into the votes table
-INSERT INTO votes (user_in_room_id, vote, ticket_id) VALUES
-(1, 5, 1),
+INSERT INTO votes (user_in_room_id, vote_type_id, ticket_id) VALUES
+(1, 3, 1),
 (2, 3, 1),
 (3, 4, 3),
 (4, 2, 4),
-(5, 1, 5),
+(5, 8, 5),
 (6, 4, 5),
-(7, 5, 5);
+(7, 8, 5);
