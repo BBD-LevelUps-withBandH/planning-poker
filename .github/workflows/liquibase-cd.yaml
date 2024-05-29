@@ -32,7 +32,7 @@ jobs:
 
       - name: Fetch AWS RDS endpoint
         run: |
-          echo "DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier wordle --query 'DBInstances[0].Endpoint.Address' --output text)" >> $GITHUB_ENV
+          echo "DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier poker --query 'DBInstances[0].Endpoint.Address' --output text)" >> $GITHUB_ENV
     
       - name: Perform migration
         uses: liquibase-github-actions/update@v4.26.0
