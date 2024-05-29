@@ -1,15 +1,17 @@
 const express = require('express');
-const http = require('http');
+const bodyParser = require('body-parser');
 
 const app = express();
 const port = 3000;
 
-app.get('/', (req, res) => {
-  res.send('Test Server');
-});
+app.use(bodyParser.json());
 
-const server = http.createServer(app);
+const userRoutes = require('./routes/userRoutes');
 
-server.listen(port, () => {
+app.use('/api', userRoutes);
+
+app.listen(port, () => {
   console.log(`Server running at http://127.0.0.1:${port}/`);
 });
+
+module.exports = app;
