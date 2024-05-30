@@ -1,4 +1,5 @@
 const { getAllTickets, updateTicket, createTicket, getTicketById } = require('../data/ticketRepository');
+const { getVotesByTicketId, createVote } = require('../data/voteRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
 
 function ticketController(router) {
