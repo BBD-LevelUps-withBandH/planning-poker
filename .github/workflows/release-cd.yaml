@@ -47,14 +47,14 @@ jobs:
     - name: Create ZIP Package
       working-directory: ./server
       run: |
-        zip -r deploy_package.zip .
+        zip -r nodejs.zip .
 
     - name: Upload Package
       working-directory: ./server
-      run: aws s3 cp deploy_package.zip s3://434468814231-deploy-bucket
+      run: aws s3 cp nodejs.zip s3://434468814231-deploy-bucket
 
     - name: Create New API Version
-      run: aws elasticbeanstalk create-application-version --application-name api-app --source-bundle S3Bucket="434468814231-deploy-bucket",S3Key="deploy_package.zip" --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
+      run: aws elasticbeanstalk create-application-version --application-name api-app --source-bundle S3Bucket="434468814231-deploy-bucket",S3Key="nodejs.zip" --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
 
     - name: Deploy API
       run: aws elasticbeanstalk update-environment --environment-name api-env --version-label "deploy-${{ github.sha }}"
