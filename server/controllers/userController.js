@@ -1,51 +1,41 @@
 const { getAllUsers, updateUser, createUser, getUserById } = require('../data/userRepository');
+const { handleErrors } = require('../middlewares/errorHandler');
 
 function userController(router) {
-
-  router.post('/user', async (req, res) => {
-    const user = req.body;
-    try {
+  router.post(
+    '/',
+    handleErrors(async (req, res) => {
+      const user = req.body;
       await updateUser(user);
       res.sendStatus(204);
-    } catch (e) {
-      console.error('Error in POST /user:', e);
-       return res.sendStatus(400);
-    }
-  });
+    })
+  );
 
-  router.get('/user', async (req, res) => {
-    try {
+  router.get(
+    '/',
+    handleErrors(async (req, res) => {
       const users = await getAllUsers();
       res.send(users);
-    } catch (e) {
-      console.error('Error in GET /user:', e);
-      return res.sendStatus(500);
-    }
-  });
+    })
+  );
 
-  router.post('/user/create', async (req, res) => {
-    const { upn } = req.body;
-    try {
+  router.post(
+    '/create',
+    handleErrors(async (req, res) => {
+      const { upn } = req.body;
       const newUser = await createUser(upn);
       res.status(201).json(newUser);
-    } catch (e) {
-      console.error('Error in POST /user/create:', e);
-      return res.sendStatus(400);
-    }
-  });
+    })
+  );
 
-  router.get('/user/:id', async (req, res) => {
-    const userId = req.params.id;
-    try {
+  router.get(
+    '/:id',
+    handleErrors(async (req, res) => {
+      const userId = req.params.id;
       const user = await getUserById(userId);
       res.json(user);
-    } catch (e) {
-      console.error('Error in GET /user/:id:', e);
-      return res.status(404).send(e.message);
-    }
-  });
+    })
+  );
 }
 
-module.exports = {
-  userController,
-};
+module.exports = { userController };
