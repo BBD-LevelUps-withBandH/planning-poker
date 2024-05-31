@@ -6,11 +6,11 @@ require("dotenv").config({
 });
 
 const client = new Client({
-  user: process.env.DB_USERNAME,
+  user: "dbadmin",
   host: process.env.DB_URL,
   database: 'poker',
   password: process.env.DB_PASSWORD,
-  port: 5432
+  port: 5432,
 });
 
 
