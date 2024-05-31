@@ -1,5 +1,5 @@
 const client = require('./databaseConnection');
-const User = require('../models/User');
+const User = require('../models/user');
 
 const tableName = 'users';
 

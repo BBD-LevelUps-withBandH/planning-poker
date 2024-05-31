@@ -11,6 +11,10 @@ const client = new Client({
   database: 'poker',
   password: process.env.DB_PASSWORD,
   port: 5432,
+  ssl: {
+    require: true,
+    rejectUnauthorized: false,
+  },
 });
 
 
