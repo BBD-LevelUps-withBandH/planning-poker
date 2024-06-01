@@ -24,10 +24,14 @@ jobs:
         aws-region: "eu-west-1"
         role-session-name: GitHub_to_AWS_via_FederatedOIDC
 
+    - name: Install Dependencies
+      working-directory: ./planning-web
+      run: npm run build
+
     - name: Upload new Frontend Files
       run: |
         aws s3 rm --recursive s3://434468814231-poker
-        aws s3 cp ./frontend s3://434468814231-poker --recursive
+        aws s3 cp ./planning-web/dist s3://434468814231-poker --recursive
 
         
   backend-deploy:
