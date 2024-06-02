@@ -3,16 +3,47 @@ import './Room.css';
 import { useParams } from 'react-router-dom';
 import UserChoice from '../UserChoice/UserChoice.jsx';
 import Agenda from '../Agenda/Agenda.jsx';
+import PropTypes from 'prop-types';
 
 /**
+ *
+ * @param {boolean} hidden - whether cards are currently hidden
+ * @param {Array<{choice: number|string|undefined}>}users - all active room users
+ * @param {number} [topic] - current topic number
+ * @returns {boolean} true if you should be able to reveal choices
+ */
+function canReveal(hidden, users, topic) {
+  return (hidden && typeof topic === 'number' && users.some(user => user.choice || user.choice === 0));
+}
+
+/**
+ *
+ * @param {boolean} hidden - whether cards are currently hidden
+ * @param {Array} tickets - all room tickets
+ * @param {number} [topic] - current topic number
+ * @returns {boolean} true if you can change to next topic
+ */
+function canChangeTopic(hidden, tickets, topic) {
+  return ((topic === null && tickets.length > 0) || (!hidden && tickets.length > topic + 1));
+}
+
+/**
+ * @param {object} props - React Props
+ * @param {{name: string, choice: number|string|undefined, superMan: boolean|undefined}} props.currentUser - current User
  * @returns {JSX.Element} Room page
  */
-export default function Room() {
+export default function Room({ currentUser }) {
   const { id } = useParams();
   const [topic, setTopic] = useState(null);
   const [hidden, setHidden] = useState(true);
   const [tickets, setTickets] = useState([]);
   const [users, setUsers] = useState([]);
+  useEffect(() => {
+    if (!currentUser.superMan) {
+      const timeout = setTimeout(() => setUsers(prevState => [...prevState, currentUser]));
+      return () => clearTimeout(timeout);
+    }
+  }, []);
   useEffect(() => {
     const interval = setInterval(() => setUsers(prevState => [
       ...prevState,
@@ -59,7 +90,7 @@ export default function Room() {
           }
         </ul>
         {
-          hidden && typeof topic === 'number' && users.some(user => user.choice || user.choice === 0)
+          currentUser.superMan && canReveal(hidden, users, topic)
             ? (
               <button
                 type='button'
@@ -77,7 +108,7 @@ export default function Room() {
             : null
         }
         {
-          (topic === null && tickets.length > 0) || (!hidden && tickets.length > topic + 1)
+          currentUser.superMan && canChangeTopic(hidden, tickets, topic)
             ? (
               <button
                 type='button'
@@ -85,7 +116,7 @@ export default function Room() {
                   () => {
                     setHidden(true);
                     setTopic(prev => (prev === null ? 0 : prev + 1));
-                    for (const user of users) user.choice = undefined;
+                    for (const roomUser of users) roomUser.choice = undefined;
                   }
                 }
               >
@@ -96,6 +127,7 @@ export default function Room() {
         }
       </main>
       <Agenda
+        currentUser={ currentUser }
         tickets={ tickets }
         setTickets={ setTickets }
         currentTopic={ topic }
@@ -103,3 +135,14 @@ export default function Room() {
     </article>
   );
 }
+
+Room.propTypes = {
+  currentUser: PropTypes.shape({
+    name: PropTypes.string,
+    choice: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
+    superMan: PropTypes.bool,
+  }),
+};

@@ -8,9 +8,10 @@ import PropTypes from 'prop-types';
  * @param {Array<{topic: string, score: number}>} props.tickets - tickets to be estimated
  * @param {Dispatch<SetStateAction<Array<{topic: string, score: number}>>>} props.setTickets - setState for tickets
  * @param {number} [props.currentTopic] - index of current topic
+ * @param {{name: string, choice: number|string|undefined, superMan: boolean|undefined}} props.currentUser - current User
  * @returns {JSX.Element} Agenda Component
  */
-export default function Agenda({ tickets, setTickets, currentTopic }) {
+export default function Agenda({ tickets, setTickets, currentTopic, currentUser }) {
   return (
     <aside className='agenda v-container-h'>
       <h2>Agenda:</h2>
@@ -25,28 +26,31 @@ export default function Agenda({ tickets, setTickets, currentTopic }) {
             </section>
           ))
         }
-        <form
-          className='container'
-          onSubmit={
-            event => {
-              event.preventDefault();
-              const topic = new FormData(event.target).get('topic');
-              setTickets(prevState => [
-                ...prevState,
-                { topic },
-              ]);
-              event.target.reset();
+        {
+          currentUser.superMan
+          && <form
+            className='container'
+            onSubmit={
+              event => {
+                event.preventDefault();
+                const topic = new FormData(event.target).get('topic');
+                setTickets(prevState => [
+                  ...prevState,
+                  { topic },
+                ]);
+                event.target.reset();
+              }
             }
-          }
-        >
-          <textarea
-            name='topic'
-            required
-          />
-          <button type='submit'>
-            Add topic
-          </button>
-        </form>
+          >
+            <textarea
+              name='topic'
+              required
+            />
+            <button type='submit'>
+              Add topic
+            </button>
+          </form>
+        }
       </ol>
     </aside>
   );
@@ -59,4 +63,12 @@ Agenda.propTypes = {
   })),
   setTickets: PropTypes.func,
   currentTopic: PropTypes.number,
+  currentUser: PropTypes.shape({
+    name: PropTypes.string,
+    choice: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
+    superMan: PropTypes.bool,
+  }),
 };
