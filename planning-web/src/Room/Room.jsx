@@ -36,11 +36,26 @@ export default function Room({ currentUser }) {
   const { id } = useParams();
   const [topic, setTopic] = useState(null);
   const [hidden, setHidden] = useState(true);
+  const choices = [
+    0,
+    1,
+    2,
+    3,
+    5,
+    8,
+    13,
+    '???',
+    '☕',
+  ];
   const [tickets, setTickets] = useState([]);
+  const [, setChoice] = useState(null);
   const [users, setUsers] = useState([]);
   useEffect(() => {
     if (!currentUser.superMan) {
-      const timeout = setTimeout(() => setUsers(prevState => [...prevState, currentUser]));
+      const timeout = setTimeout(() => setUsers(prevState => [
+        ...prevState,
+        currentUser,
+      ]));
       return () => clearTimeout(timeout);
     }
   }, []);
@@ -89,6 +104,37 @@ export default function Room({ currentUser }) {
             ))
           }
         </ul>
+        {
+          !currentUser.superMan && typeof topic === 'number'
+          && <form
+            className='container'
+            onSubmit={
+              event => {
+                event.preventDefault();
+                // TODO send to BE
+              }
+            }
+          >
+            <h2>Vote</h2>
+            {
+              choices.map((value, i) => (
+                <button
+                  className={ currentUser.choice === value ? 'chosen' : undefined }
+                  type='submit'
+                  key={ i }
+                  onClick={
+                    () => {
+                      currentUser.choice = value;
+                      setChoice(value);
+                    }
+                  }
+                >
+                  {value}
+                </button>
+              ))
+            }
+          </form>
+        }
         {
           currentUser.superMan && canReveal(hidden, users, topic)
             ? (

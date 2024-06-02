@@ -12,6 +12,33 @@
             text-align: center;
         }
 
+        &>form {
+            border-top: solid rgba(0, 0, 0, 15%) 1px;
+            gap: 1em;
+            flex-wrap: wrap;
+            justify-content: center;
+
+            &>h2 {
+                flex-basis: 100%;
+                text-align: center;
+            }
+            &>button {
+                border-radius: 1rem;
+                width: var(--card-width);
+                aspect-ratio: var(--card-ratio);
+                align-items: center;
+                background-color: floralwhite;
+                color: black;
+                box-shadow: 1px 1px 1px 0 rgba(0, 0, 0, 0.5);
+                border: 3px solid white;
+
+                &.chosen {
+                    scale: 105%;
+                    box-shadow: 0 0 2px 0 green;
+                }
+            }
+        }
+
 
         &>ul {
             gap: 1em;
@@ -23,6 +50,23 @@
 
                 &>section {
                     gap: 1em;
+                }
+            }
+        }
+    }
+}
+
+.dark .room {
+
+    &>main {
+
+        &>form {
+            border-top: solid rgba(255, 255, 255, 15%) 1px;
+
+            &>button {
+
+                &.chosen {
+                    box-shadow: 0 0 2px 1px lightgreen;
                 }
             }
         }

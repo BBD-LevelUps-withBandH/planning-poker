@@ -1,4 +1,6 @@
 :root {
+    --card-width: 5em;
+    --card-ratio: 2.5/3.5;
     --dark-theme: #000f26;
     --transition-duration: .5s
 }
