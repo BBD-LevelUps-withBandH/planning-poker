@@ -1,11 +1,20 @@
 const { Client } = require('pg');
+const path = require("path");
+require("dotenv").config({
+  override: true,
+  path: path.join(__dirname, "db.env"),
+});
 
 const client = new Client({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'postgres',
-  password: '1630',
+  user: "dbadmin",
+  host: process.env.DB_URL,
+  database: 'poker',
+  password: process.env.DB_PASSWORD,
   port: 5432,
+  ssl: {
+    require: true,
+    rejectUnauthorized: false,
+  },
 });
 
 

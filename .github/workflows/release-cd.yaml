@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  workflow_call: 
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+
+jobs:
+  frontend-deploy:
+    name: Frontend Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{secrets.AWS_ASSUME_ROLE}}
+        aws-region: "eu-west-1"
+        role-session-name: GitHub_to_AWS_via_FederatedOIDC
+
+    - name: Install Dependencies
+      working-directory: ./planning-web
+      run: npm run build
+
+    - name: Upload new Frontend Files
+      run: |
+        aws s3 rm --recursive s3://434468814231-poker
+        aws s3 cp ./planning-web/dist s3://434468814231-poker --recursive
+
+        
+  backend-deploy:
+    name: Backend Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{secrets.AWS_ASSUME_ROLE}}
+        aws-region: "eu-west-1"
+        role-session-name: GitHub_to_AWS_via_FederatedOIDC
+
+    - name: Install Dependencies
+      working-directory: ./server
+      run: npm install
+
+    - name: Create ZIP Package
+      working-directory: ./server
+      run: |
+        zip -r nodejs.zip .
+
+    - name: Upload Package
+      working-directory: ./server
+      run: aws s3 cp nodejs.zip s3://434468814231-deploy-bucket
+
+    - name: Create New API Version
+      run: aws elasticbeanstalk create-application-version --application-name api-app --source-bundle S3Bucket="434468814231-deploy-bucket",S3Key="nodejs.zip" --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
+
+    - name: Deploy API
+      run: aws elasticbeanstalk update-environment --environment-name api-env --version-label "deploy-${{ github.sha }}"

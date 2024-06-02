@@ -15,7 +15,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   enabled             = true
   is_ipv6_enabled     = false
-  default_root_object = "main.html"
+  default_root_object = "index.html"
 
   aliases = [local.fqdn]
 
