@@ -1,10 +1,10 @@
 --changeset stefan:ddl:dropTables
-DROP TABLE IF EXISTS "users";
-DROP TABLE IF EXISTS "rooms";
-DROP TABLE IF EXISTS "users_in_rooms";
-DROP TABLE IF EXISTS "tickets";
 DROP TABLE IF EXISTS "votes";
 DROP TABLE IF EXISTS "vote_types";
+DROP TABLE IF EXISTS "users_in_rooms";
+DROP TABLE IF EXISTS "tickets";
+DROP TABLE IF EXISTS "users";
+DROP TABLE IF EXISTS "rooms";
 --rollback DROP TABLE IF EXISTS "users";
 
 
