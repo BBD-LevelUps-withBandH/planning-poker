@@ -5,3 +5,5 @@ databaseChangeLog:
       file: ./database/tableAlters.sql
    - include:
       file: ./database/mockData/dummyData.sql
+   - include:
+      file: ./database/addingUUID.sql
