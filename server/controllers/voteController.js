@@ -1,14 +1,7 @@
-const { getAllVotes, getVotesByTicketId, createVote } = require('../data/voteRepository');
+const { getVotesByTicketId, createVote } = require('../data/voteRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
 
 function voteController(router) {
-  router.get(
-    '/',
-    handleErrors(async (req, res) => {
-      const votes = await getAllVotes();
-      res.send(votes);
-    })
-  );
 
   router.get(
     '/ticket/:ticketId',
