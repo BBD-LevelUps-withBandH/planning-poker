@@ -1,6 +1,7 @@
 const { getAllRooms, updateRoom, createRoom, getRoomById } = require('../data/roomRepository');
 const { getAllUsersInRoom, addUserToRoom, removeUserFromRoom } = require('../data/userInRoomRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
+const { getAllTicketsInRoom } = require('../data/ticketRepository');
 
 function roomController(router) {
   router.post(
@@ -63,6 +64,15 @@ function roomController(router) {
       const { roomId, userInRoomId } = req.params;
       await removeUserFromRoom(userInRoomId);
       res.sendStatus(204);
+    })
+  );
+  
+  router.get(
+    '/:roomId/tickets',
+    handleErrors(async (req, res) => {
+      const { roomId } = req.params;
+      const tickets = await getAllTicketsInRoom(roomId);
+      res.send(tickets);
     })
   );
 }

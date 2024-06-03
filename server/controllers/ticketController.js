@@ -12,14 +12,6 @@ function ticketController(router) {
     })
   );
 
-  router.get(
-    '/',
-    handleErrors(async (req, res) => {
-      const tickets = await getAllTickets();
-      res.send(tickets);
-    })
-  );
-
   router.post(
     '/create',
     handleErrors(async (req, res) => {

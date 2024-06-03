@@ -2,13 +2,14 @@ const client = require('./databaseConnection');
 const UserInRoom = require('../models/userInRoom');
 
 const tableName = 'users_in_rooms';
+const userTableName = 'users'
 
 const getAllUsersInRoom = async (roomId) => {
   const query = `
-    SELECT users_in_rooms.user_in_room_id, users_in_rooms.user_id, users_in_rooms.room_id, users.upn 
-    FROM users_in_rooms
-    JOIN users ON users_in_rooms.user_id = users.user_id
-    WHERE users_in_rooms.room_id = $1;
+    SELECT uir.user_in_room_id, uir.user_id, uir.room_id, u.upn 
+    FROM ${tableName} uir
+    JOIN ${userTableName} u ON uir.user_id = u.user_id
+    WHERE uir.room_id = $1;
   `;
 
   const result = await client.query(query, [roomId]);
