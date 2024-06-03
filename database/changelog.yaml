@@ -6,4 +6,4 @@ databaseChangeLog:
    - include:
       file: ./database/mockData/dummyData.sql
    - include:
-      file: ./database/addingUUID.sql
+      file: ./database/addingUUID_fixed.sql
