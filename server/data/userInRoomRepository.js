@@ -9,7 +9,7 @@ const getAllUsersInRoom = async (roomUuid) => {
   const query = `
     SELECT uir.user_in_room_id, uir.user_id, uir.room_id, u.upn 
     FROM ${tableName} uir
-    JOIN ${userTableName} u ON uir.upn = u.upn
+    JOIN ${userTableName} u ON uir.user_id = u.user_id
     JOIN ${roomTableName} r ON uir.room_id = r.room_id
     WHERE r.room_uuid = $1;
   `;
