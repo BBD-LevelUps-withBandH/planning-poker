@@ -24,6 +24,13 @@ jobs:
         aws-region: "eu-west-1"
         role-session-name: GitHub_to_AWS_via_FederatedOIDC
 
+    - name: configure environment
+      working-directory: ./planning-web
+      shell: bash
+      run: |
+        echo -e "VITE_COGNITO_DOMAIN=${{ secrets.VITE_COGNITO_DOMAIN }}\nVITE_REDIRECT_URI=${{ secrets.VITE_REDIRECT_URI }}\nVITE_CLIENT_ID=${{ secrets.VITE_CLIENT_ID }}" > .env
+        cat .env
+
     - name: Install Dependencies
       working-directory: ./planning-web
       run: npm run build
