@@ -1,9 +1,7 @@
 databaseChangeLog:
    - include:
-      file: ./database/tableCreates.sql
+      file: ./database/tableCreates_new.sql
    - include:
       file: ./database/tableAlters.sql
    - include:
       file: ./database/mockData/dummyData.sql
-   - include:
-      file: ./database/addingUUID_fixed.sql
