@@ -3,16 +3,18 @@ const UserInRoom = require('../models/userInRoom');
 
 const tableName = 'users_in_rooms';
 const userTableName = 'users'
+const roomTableName = 'rooms';
 
-const getAllUsersInRoom = async (roomId) => {
+const getAllUsersInRoom = async (roomUuid) => {
   const query = `
     SELECT uir.user_in_room_id, uir.user_id, uir.room_id, u.upn 
     FROM ${tableName} uir
-    JOIN ${userTableName} u ON uir.user_id = u.user_id
-    WHERE uir.room_id = $1;
+    JOIN ${userTableName} u ON uir.upn = u.upn
+    JOIN ${roomTableName} r ON uir.room_id = r.room_id
+    WHERE r.room_uuid = $1;
   `;
 
-  const result = await client.query(query, [roomId]);
+  const result = await client.query(query, [roomUuid]);
   return result.rows.map(row => new UserInRoom(row.user_in_room_id, row.upn));
 };
 

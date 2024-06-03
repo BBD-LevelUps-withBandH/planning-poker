@@ -40,11 +40,11 @@ function roomController(router) {
   );
 
   router.get(
-    '/:id/users',
+    '/:uuid/users',
     handleErrors(async (req, res) => {
-      const roomId = req.params.id;
-      const usersInRoom = await getAllUsersInRoom(roomId);
-      res.send(usersInRoom);
+      const roomUuid = req.params.uuid;
+      const usersInRoom = await getAllUsersInRoom(roomUuid);
+      res.status(200).json(usersInRoom);
     })
   );
 
