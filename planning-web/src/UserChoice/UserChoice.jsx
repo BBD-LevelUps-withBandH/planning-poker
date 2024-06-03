@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
  *
  * @param {object} props - React Props
  * @param {string} props.name - username
- * @param {string|number} [props.choice] - numeric or other choice
+ * @param {object} [props.choice] - numeric or other choice
  * @param {boolean} props.hidden - whether to hide or display choice
  * @returns {JSX.Element} UserChoice Component
  */
@@ -14,7 +14,7 @@ export default function UserChoice({ name, choice, hidden }) {
   return (
     <li className='user-choice v-container-h'>
       <p>{name}</p>
-      {choice || choice === 0 ? <figure className={ `v-container-hv${hidden ? ' hidden' : ''}` }>{choice}</figure> : <div />}
+      {choice ? <figure className={ `v-container-hv${hidden ? ' hidden' : ''}` }>{choice.vote}</figure> : <div />}
     </li>
   );
 }

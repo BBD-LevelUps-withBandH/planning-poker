@@ -34,48 +34,91 @@ function canChangeTopic(hidden, tickets, topic) {
  */
 export default function Room({ currentUser }) {
   const { id } = useParams();
+  const api = 'https://api.planning-poker.projects.bbdgrad.com/';
+  const pollTimeMs = 5_000;
   const [topic, setTopic] = useState(null);
   const [hidden, setHidden] = useState(true);
-  const choices = [
-    0,
-    1,
-    2,
-    3,
-    5,
-    8,
-    13,
-    '???',
-    '☕',
-  ];
+  const [choices, setChoices] = useState([]);
   const [tickets, setTickets] = useState([]);
-  const [, setChoice] = useState(null);
+  const [choice, setChoice] = useState(null);
   const [users, setUsers] = useState([]);
+  const [room, setRoom] = useState(null);
+  const [votes, setVotes] = useState([]);
+  const [userInRoomDetails, setUserInRoomDetails] = useState(null);
+  const [notFound, setNotFound] = useState(false);
+
+  const getChoice = (userInRoomId) => {
+    const vote = votes.find(vote => vote.ticketId === topic?.ticketId && userInRoomId === vote.userInRoomId);
+    if (!vote) return;
+    return choices.find(choice => choice.voteTypeId === vote.voteId)
+  }
+
   useEffect(() => {
-    if (!currentUser.superMan) {
-      const timeout = setTimeout(() => setUsers(prevState => [
-        ...prevState,
-        currentUser,
-      ]));
-      return () => clearTimeout(timeout);
+    fetch(`${api}rooms/${id}`)
+      .then(response => {
+        if (response.statusCode === 404) throw response;
+        return response.json();
+      })
+      .then(setRoom)
+      .catch(setNotFound);
+  }, []);
+
+  useEffect(() => {
+    fetch(`${api}vote-types`)
+      .then(response => response.json())
+      .then(setChoices);
+  }, []);
+
+  useEffect(() => {
+    if (room) {
+      fetch(`${api}rooms/${id}/users`,
+        {method: 'POST', body: JSON.stringify({userId: 3})})
+        .then(response => response.json())
+        .then(setUserInRoomDetails);
+
+      const pollUsersInRoom = () => fetch(`${api}rooms/${id}/users`)
+        .then(response => response.json())
+        .then(setUsers)
+        .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
+        .then(pollUsersInRoom);
+
+      // const pollCurrentTopic = () => fetch('topic')
+      //   .then(response => response.json())
+      //   .then(setTopic)
+      //   .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
+      //   .then(pollCurrentTopic);
+
+      const pollTickets = () => fetch(`${api}rooms/${id}/tickets`)
+        .then(response => response.json())
+        .then(tickets => {
+          setTickets(tickets);
+          setTopic(tickets[1]);
+          return Promise.all(tickets.map(({ticketId}) => fetch(`${api}votes/ticket/${ticketId}`).then(response => response.json())))
+        })
+        .then(ticketVotes => ticketVotes.flat())
+        .then(setVotes)
+        .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
+        .then(pollTickets);
+
+      const usersInRoom = setTimeout(pollUsersInRoom);
+      // const currentTopic = setTimeout(pollCurrentTopic);
+      const agenda = setTimeout(pollTickets);
+
+      return () => {
+        clearTimeout(usersInRoom);
+        // clearTimeout(currentTopic);
+        clearTimeout(agenda);
+      };
     }
-  }, []);
-  useEffect(() => {
-    const interval = setInterval(() => setUsers(prevState => [
-      ...prevState,
-      {
-        name: 'Dummy',
-        choice: Math.floor(Math.random() * 13),
-      },
-    ]), 5000); // TODO remove once implemented
-    return () => clearInterval(interval);
-  }, []);
+  }, [room]);
+
+  if (notFound) return <h2>Nothing here pal, soz</h2>;
+
   return (
     <article className='room container'>
       <main className='v-container-vh'>
         {
-          topic === null
-            ? null
-            : <h2 className='container-v'>Current Topic: <p>{tickets[topic].topic}</p></h2>
+          topic && <h2 className='container-v'>Current Topic: <p>{topic.ticketName}</p></h2>
         }
         <ul className='container-vh'>
           {
@@ -94,23 +137,28 @@ export default function Room({ currentUser }) {
             )
           }
           {
-            users.map(({ name, choice }, index) => (
+            users.map(({ userId, userInRoomId }, index) => (
               <UserChoice
                 key={ index }
-                name={ name }
-                choice={ choice }
+                name={ userId }
+                choice={ getChoice(userInRoomId) }
                 hidden={ hidden }
               />
             ))
           }
         </ul>
         {
-          !currentUser.superMan && typeof topic === 'number'
+          !currentUser.superMan && topic
           && <form
             className='container'
             onSubmit={
               event => {
                 event.preventDefault();
+                fetch(`${api}vote/create`, {
+                  method: 'POST',
+                  body: JSON.stringify({ userInRoomId: userInRoomDetails.userInRoomId, voteTypeId: choice.voteTypeId, ticketId: topic.ticketId}),
+                })
+                  .catch(() => setChoice(null));
                 // TODO send to BE
               }
             }
@@ -119,17 +167,16 @@ export default function Room({ currentUser }) {
             {
               choices.map((value, i) => (
                 <button
-                  className={ currentUser.choice === value ? 'chosen' : undefined }
+                  className={ choice === value ? 'chosen' : undefined }
                   type='submit'
                   key={ i }
                   onClick={
                     () => {
-                      currentUser.choice = value;
                       setChoice(value);
                     }
                   }
                 >
-                  {value}
+                  {value.vote}
                 </button>
               ))
             }
@@ -174,6 +221,7 @@ export default function Room({ currentUser }) {
       </main>
       <Agenda
         currentUser={ currentUser }
+        votes={ votes.map(({ticketId, voteTypeId}) => ({ticketId, vote: choices.find(choice => choice.voteTypeId === voteTypeId)?.vote})) }
         tickets={ tickets }
         setTickets={ setTickets }
         currentTopic={ topic }
