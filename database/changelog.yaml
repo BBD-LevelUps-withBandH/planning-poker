@@ -6,4 +6,4 @@ databaseChangeLog:
    - include:
       file: ./database/mockData/dummyData_new.sql
    - include:
-      file: ./database/createTables.sql
+      file: ./database/createTables_new.sql
