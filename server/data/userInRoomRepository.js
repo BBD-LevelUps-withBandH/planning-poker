@@ -18,21 +18,24 @@ const getAllUsersInRoom = async (roomUuid) => {
   return result.rows.map(row => new UserInRoom(row.user_in_room_id, row.upn));
 };
 
-const addUserToRoom = async (userId, roomId) => {
-  const result = await client.query(
-    `INSERT INTO ${tableName} (user_id, room_id) VALUES ($1, $2) RETURNING *`,
-    [userId, roomId]
-  );
-  const row = result.rows[0];
-  return new UserInRoom(row.user_in_room_id, row.user_id, row.room_id);
-};
+const addUserToRoom = async (userId, roomUuid) => {
+  const query = `
+    INSERT INTO ${tableName} (user_id, room_id)
+    VALUES ($1, (SELECT room_id FROM ${roomTableName} WHERE room_uuid = $2))
+    RETURNING user_in_room_id, user_id, room_id;
+  `;
 
-const removeUserFromRoom = async (userInRoomId) => {
-  await client.query(`DELETE FROM ${tableName} WHERE user_in_room_id = $1`, [userInRoomId]);
+  const result = await client.query(query, [userId, roomUuid]);
+  const row = result.rows[0];
+
+  const userQuery = `SELECT upn FROM ${userTableName} WHERE user_id = $1`;
+  const userResult = await client.query(userQuery, [userId]);
+  const userUpn = userResult.rows[0].upn;
+
+  return new UserInRoom(row.user_in_room_id, row.user_id, row.room_id, userUpn);
 };
 
 module.exports = {
   getAllUsersInRoom,
   addUserToRoom,
-  removeUserFromRoom,
 };

@@ -33,20 +33,20 @@ function roomController(router) {
   );
 
   router.post(
-    '/:id/users',
+    '/:uuid/users',
     handleErrors(async (req, res) => {
-      const roomId = req.params.id;
+      const roomUuid = req.params.uuid;
       const { userId } = req.body;
-      const userInRoom = await addUserToRoom(userId, roomId);
+      const userInRoom = await addUserToRoom(userId, roomUuid);
       res.status(201).json(userInRoom);
     })
   );
   
   router.get(
-    '/:roomId/tickets',
+    '/:uuid/tickets',
     handleErrors(async (req, res) => {
-      const { roomId } = req.params;
-      const tickets = await getAllTicketsInRoom(roomId);
+      const roomUuid = req.params.uuid;
+      const tickets = await getAllTicketsInRoom(roomUuid);
       res.send(tickets);
     })
   );
