@@ -9,10 +9,11 @@ import PropTypes from 'prop-types';
  * @param {Dispatch<SetStateAction<Array<{topic: string, score: number}>>>} props.setTickets - setState for tickets
  * @param {{ticketName: string, ticketId: string}} [props.currentTopic] - index of current topic
  * @param {Array<{ticketId: string, vote: string}>} props.votes - all the votes for the room
- * @param {{name: string, choice: number|string|undefined, superMan: boolean|undefined}} props.currentUser - current User
+ * @param {{userId: string}} props.userInRoomDetails - current User
+ * @param {{ownerId: string}} props.room - room
  * @returns {JSX.Element} Agenda Component
  */
-export default function Agenda({ tickets, setTickets, currentTopic, currentUser, votes }) {
+export default function Agenda({ tickets, setTickets, currentTopic, userInRoomDetails, votes, room }) {
   function getTicketBody ({ticketName, ticketId}, index) {
     const ticketVotes = votes.filter(vote => vote.ticketId === ticketId && !isNaN(Number(vote.vote)));
     return (
@@ -34,7 +35,7 @@ export default function Agenda({ tickets, setTickets, currentTopic, currentUser,
           tickets.map(getTicketBody)
         }
         {
-          currentUser.superMan
+          room.ownerId === userInRoomDetails?.userId
           && <form
             className='container'
             onSubmit={
@@ -64,18 +65,9 @@ export default function Agenda({ tickets, setTickets, currentTopic, currentUser,
 }
 
 Agenda.propTypes = {
-  tickets: PropTypes.arrayOf(PropTypes.shape({
-    topic: PropTypes.string,
-    score: PropTypes.number,
-  })),
+  tickets: PropTypes.array,
   setTickets: PropTypes.func,
-  currentTopic: PropTypes.number,
-  currentUser: PropTypes.shape({
-    name: PropTypes.string,
-    choice: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-    ]),
-    superMan: PropTypes.bool,
-  }),
+  currentTopic: PropTypes.object,
+  userInRoomDetails: PropTypes.object,
+  room: PropTypes.object,
 };

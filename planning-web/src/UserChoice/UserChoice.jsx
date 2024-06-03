@@ -21,9 +21,6 @@ export default function UserChoice({ name, choice, hidden }) {
 
 UserChoice.propTypes = {
   name: PropTypes.string,
-  choice: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-  ]),
+  choice: PropTypes.object,
   hidden: PropTypes.bool,
 };

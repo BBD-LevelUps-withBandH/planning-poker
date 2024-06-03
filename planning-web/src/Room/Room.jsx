@@ -3,41 +3,38 @@ import './Room.css';
 import { useParams } from 'react-router-dom';
 import UserChoice from '../UserChoice/UserChoice.jsx';
 import Agenda from '../Agenda/Agenda.jsx';
-import PropTypes from 'prop-types';
 
 /**
  *
  * @param {boolean} hidden - whether cards are currently hidden
- * @param {Array<{choice: number|string|undefined}>}users - all active room users
- * @param {number} [topic] - current topic number
+ * @param {Array} votes - all active room users
+ * @param {{topicId: string}} [topic] - current topic
  * @returns {boolean} true if you should be able to reveal choices
  */
-function canReveal(hidden, users, topic) {
-  return (hidden && typeof topic === 'number' && users.some(user => user.choice || user.choice === 0));
+function canReveal(hidden, votes, topic) {
+  return hidden && topic && votes.some(({topicId}) => topicId === topic.topicId);
 }
 
 /**
  *
  * @param {boolean} hidden - whether cards are currently hidden
  * @param {Array} tickets - all room tickets
- * @param {number} [topic] - current topic number
+ * @param {object} [topic] - current topic
  * @returns {boolean} true if you can change to next topic
  */
 function canChangeTopic(hidden, tickets, topic) {
-  return ((topic === null && tickets.length > 0) || (!hidden && tickets.length > topic + 1));
+  return ((!topic && tickets.length > 0) || (!hidden && tickets.length > tickets.indexOf(topic) + 1));
 }
 
 /**
- * @param {object} props - React Props
- * @param {{name: string, choice: number|string|undefined, superMan: boolean|undefined}} props.currentUser - current User
  * @returns {JSX.Element} Room page
  */
-export default function Room({ currentUser }) {
+export default function Room() {
   const { id } = useParams();
   const api = 'https://api.planning-poker.projects.bbdgrad.com/';
   const pollTimeMs = 5_000;
-  const [topic, setTopic] = useState(null);
-  const [hidden, setHidden] = useState(true);
+  const [topic, setTopic] = useState(null); // TODO make backend
+  const [hidden, setHidden] = useState(true); // TODO make backend
   const [choices, setChoices] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [choice, setChoice] = useState(null);
@@ -71,10 +68,15 @@ export default function Room({ currentUser }) {
 
   useEffect(() => {
     if (room) {
-      fetch(`${api}rooms/${id}/users`,
-        {method: 'POST', body: JSON.stringify({userId: 3})})
-        .then(response => response.json())
-        .then(setUserInRoomDetails);
+      // fetch(`${api}rooms/${id}/users`,
+      //   {method: 'POST', body: JSON.stringify({userId: 3})})
+      //   .then(response => response.json())
+      //   .then(setUserInRoomDetails);
+      setUserInRoomDetails({
+        "userInRoomId": 16,
+        "userId": 3,
+        "roomId": 1
+      });
 
       const pollUsersInRoom = () => fetch(`${api}rooms/${id}/users`)
         .then(response => response.json())
@@ -100,9 +102,9 @@ export default function Room({ currentUser }) {
         .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
         .then(pollTickets);
 
-      const usersInRoom = setTimeout(pollUsersInRoom);
-      // const currentTopic = setTimeout(pollCurrentTopic);
-      const agenda = setTimeout(pollTickets);
+      const usersInRoom = setTimeout(pollUsersInRoom, 50);
+      // const currentTopic = setTimeout(pollCurrentTopic, 50);
+      const agenda = setTimeout(pollTickets, 50);
 
       return () => {
         clearTimeout(usersInRoom);
@@ -112,7 +114,7 @@ export default function Room({ currentUser }) {
     }
   }, [room]);
 
-  if (notFound) return <h2>Nothing here pal, soz</h2>;
+  if (notFound || !room) return <h2>Nothing here pal, soz</h2>;
 
   return (
     <article className='room container'>
@@ -148,18 +150,17 @@ export default function Room({ currentUser }) {
           }
         </ul>
         {
-          !currentUser.superMan && topic
+          room.ownerId !== userInRoomDetails?.userId && topic
           && <form
             className='container'
             onSubmit={
               event => {
                 event.preventDefault();
-                fetch(`${api}vote/create`, {
+                fetch(`${api}votes/create`, {
                   method: 'POST',
                   body: JSON.stringify({ userInRoomId: userInRoomDetails.userInRoomId, voteTypeId: choice.voteTypeId, ticketId: topic.ticketId}),
                 })
-                  .catch(() => setChoice(null));
-                // TODO send to BE
+                  .then(response => response.ok || setChoice(null));
               }
             }
           >
@@ -183,15 +184,13 @@ export default function Room({ currentUser }) {
           </form>
         }
         {
-          currentUser.superMan && canReveal(hidden, users, topic)
+          room.ownerId === userInRoomDetails?.userId && canReveal(hidden, users, topic)
             ? (
               <button
                 type='button'
                 onClick={
                   () => {
                     setHidden(false);
-                    const voters = users.filter(user => user.choice || user.choice === 0);
-                    tickets[topic].score = voters.reduce((acc, currentValue) => acc + currentValue.choice, 0) / voters.length;
                   }
                 }
               >
@@ -201,15 +200,14 @@ export default function Room({ currentUser }) {
             : null
         }
         {
-          currentUser.superMan && canChangeTopic(hidden, tickets, topic)
+          room.ownerId === userInRoomDetails?.userId && canChangeTopic(hidden, tickets, topic)
             ? (
               <button
                 type='button'
                 onClick={
                   () => {
                     setHidden(true);
-                    setTopic(prev => (prev === null ? 0 : prev + 1));
-                    for (const roomUser of users) roomUser.choice = undefined;
+                    setTopic(tickets.at(tickets.indexOf(topic) + 1));
                   }
                 }
               >
@@ -220,7 +218,8 @@ export default function Room({ currentUser }) {
         }
       </main>
       <Agenda
-        currentUser={ currentUser }
+        userInRoomDetails={ userInRoomDetails }
+        room={ room }
         votes={ votes.map(({ticketId, voteTypeId}) => ({ticketId, vote: choices.find(choice => choice.voteTypeId === voteTypeId)?.vote})) }
         tickets={ tickets }
         setTickets={ setTickets }
@@ -229,14 +228,3 @@ export default function Room({ currentUser }) {
     </article>
   );
 }
-
-Room.propTypes = {
-  currentUser: PropTypes.shape({
-    name: PropTypes.string,
-    choice: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-    ]),
-    superMan: PropTypes.bool,
-  }),
-};
