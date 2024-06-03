@@ -1,4 +1,5 @@
 const { getAllTickets, updateTicket, createTicket, getTicketById } = require('../data/ticketRepository');
+const { getVotesByTicketId, createVote } = require('../data/voteRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
 
 function ticketController(router) {
@@ -8,14 +9,6 @@ function ticketController(router) {
       const ticket = req.body;
       await updateTicket(ticket);
       res.sendStatus(204);
-    })
-  );
-
-  router.get(
-    '/',
-    handleErrors(async (req, res) => {
-      const tickets = await getAllTickets();
-      res.send(tickets);
     })
   );
 

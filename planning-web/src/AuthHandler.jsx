@@ -10,6 +10,7 @@ export default function AuthHandler() {
       const params = new URLSearchParams(hash.substring(1));
       const accessToken = params.get('access_token');
       const idToken = params.get('id_token');
+      const redirectPath = params.get('state');
 
       if (accessToken && idToken) {
         localStorage.setItem('access_token', accessToken);
@@ -18,7 +19,7 @@ export default function AuthHandler() {
         // Clear the hash from the URL
         window.location.hash = '';
         // Redirect to home or desired route
-        navigate('/');
+        navigate(`/${redirectPath || ''}`);
       }
     }
   }, [navigate]);

@@ -3,8 +3,10 @@ const Ticket = require('../models/ticket');
 
 const tableName = 'tickets';
 
-const getAllTickets = async () => {
-  const result = await client.query(`SELECT * FROM ${tableName}`);
+const getAllTicketsInRoom = async (roomId) => {
+  const query = `
+    SELECT * FROM ${tableName} WHERE room_id = $1`;
+  const result = await client.query(query, [roomId]);
   return result.rows.map(row => new Ticket(row.ticket_id, row.ticket_name, row.room_id));
 };
 
@@ -35,7 +37,7 @@ const createTicket = async (ticketName, roomId) => {
 };
 
 module.exports = {
-  getAllTickets,
+  getAllTicketsInRoom,
   getTicketById,
   updateTicket,
   createTicket,

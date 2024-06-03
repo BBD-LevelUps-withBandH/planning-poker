@@ -1,6 +1,13 @@
 :root {
+    --card-width: 5em;
+    --card-ratio: 2.5/3.5;
     --dark-theme: #000f26;
     --transition-duration: .5s
+}
+
+body {
+    min-height: 100vh;
+
 }
 
 * {
@@ -11,6 +18,7 @@
     box-sizing: border-box;
 }
 
+input,
 button {
     border: 1px rgba(0, 0, 0, 15%) solid;
     border-radius: .2em;
@@ -74,6 +82,7 @@ a {
     color: white;
     background-color: var(--dark-theme);
 
+    & input,
     & button {
         border: 1px rgba(255, 255, 255, 15%) solid;
     }
