@@ -38,7 +38,6 @@ function roomController(router) {
     })
   );
 
-  // New routes for handling users in rooms
   router.get(
     '/:id/users',
     handleErrors(async (req, res) => {
