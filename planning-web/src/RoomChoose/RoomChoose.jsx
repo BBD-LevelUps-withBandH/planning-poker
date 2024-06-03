@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction, useEffect } from 'react';
 import './RoomChoose.css';
 import { useNavigate } from 'react-router-dom';
 import { createUUID } from '../chatgpt/uuid.js';
@@ -11,17 +11,26 @@ import PropTypes from 'prop-types';
  */
 export default function RoomChoose({ setUser }) {
   const navigateTo = useNavigate();
+
+  const handleSignIn = (redirectPath) => {
+    const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
+    const redirectUri = import.meta.env.VITE_REDIRECT_URI;
+    const clientId = import.meta.env.VITE_CLIENT_ID;
+    const url = `${cognitoDomain}/oauth2/authorize?identity_provider=Google&redirect_uri=${redirectUri}&response_type=token&client_id=${clientId}&scope=email openid phone&state=${redirectPath}`;
+    window.location.href = url;
+  };
+
   return (
     <main className='room-choose v-container'>
       <form
         className='v-container'
-        onSubmit={
-          () => {
-            setUser(prevState => ({
+        onSubmit={(event) => {
+            event.preventDefault();
+            setUser((prevState) => ({
               ...prevState,
               superMan: true,
             }));
-            navigateTo(`room/${createUUID()}`);
+            handleSignIn(`room/${createUUID()}`);
           }
         }
       >
@@ -30,11 +39,10 @@ export default function RoomChoose({ setUser }) {
       </form>
       <form
         className='v-container'
-        onSubmit={
-          event => {
+        onSubmit={(event) => {
             event.preventDefault();
             const form = new FormData(event.target);
-            navigateTo(`room/${form.get('code')}`);
+            handleSignIn(`room/${form.get('code')}`);
           }
         }
       >
