@@ -55,6 +55,13 @@ jobs:
         aws-region: "eu-west-1"
         role-session-name: GitHub_to_AWS_via_FederatedOIDC
 
+    - name: configure environment
+      working-directory: ./server/middlewares
+      shell: bash
+      run: |
+        echo -e "USERPOOLID=${{ secrets.USERPOOLID }}\nAWS_REGION=${{ secrets.AWS_REGION }}\nCLIENTID=${{ secrets.CLIENTID }}" > .env
+        cat .env
+
     - name: Install Dependencies
       working-directory: ./server
       run: npm install
