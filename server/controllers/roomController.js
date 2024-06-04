@@ -36,12 +36,12 @@ function roomController(router) {
     '/:uuid/users',
     handleErrors(async (req, res) => {
       const roomUuid = req.params.uuid;
-      const { userId } = req.body;
-      const userInRoom = await addUserToRoom(userId, roomUuid);
+      const { upn } = req.body;
+      const userInRoom = await addUserToRoom(upn, roomUuid);
       res.status(201).json(userInRoom);
     })
   );
-  
+
   router.get(
     '/:uuid/tickets',
     handleErrors(async (req, res) => {
