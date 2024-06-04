@@ -17,7 +17,7 @@ function roomController(router) {
   router.get(
     '/:uuid',
     handleErrors(async (req, res) => {
-      const roomUUID = req.params.id;
+      const roomUUID = req.params.uuid;
       const room = await getRoomByUuid(roomUUID);
       res.json(room);
     })
@@ -41,7 +41,7 @@ function roomController(router) {
       res.status(201).json(userInRoom);
     })
   );
-  
+
   router.get(
     '/:uuid/tickets',
     handleErrors(async (req, res) => {
