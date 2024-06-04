@@ -17,7 +17,7 @@ const getAllTicketsInRoom = async (roomUuid) => {
 
 const createTicket = async (ticketName, room_Uuid) => {
   const result = await client.query(
-    `INSERT INTO ${tableName} (ticket_name, room_id) VALUES ($1, SELECT room_id FROM rooms WHERE room_uuid = $2) RETURNING *`,
+    `INSERT INTO ${tableName} (ticket_name, room_id) VALUES ($1, (SELECT room_id FROM rooms WHERE room_uuid = $2)) RETURNING *`,
     [ticketName, room_Uuid]
   );
   const row = result.rows[0];
