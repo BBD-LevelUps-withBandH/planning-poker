@@ -8,17 +8,18 @@ import handleSignIn from '../handleSignIn.js';
 /**
  * @returns {JSX.Element} RoomChoose page
  */
-export default function RoomChoose() {
+export default function RoomChoose({setUser, user}) {
   const navigateTo = useNavigate();
   const [loggingIn, setLoggingIn] = useState(false);
 
-  const createRoom = () => fetch(`${api}rooms/create`, {
+  const createRoom = user => fetch(`${api}rooms/create`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${sessionStorage.getItem('access_token')}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
+      upn: user.upn,
       roomName: ':)',
       closed: false,
     }),
@@ -29,20 +30,29 @@ export default function RoomChoose() {
   useEffect(() => {
     const { hash } = window.location;
     if (hash) {
-      setLoggingIn(true);
       const params = new URLSearchParams(hash.slice(1));
       const accessToken = params.get('access_token');
       const idToken = params.get('id_token');
       const redirectPath = params.get('state');
 
       if (accessToken && idToken) {
+        setLoggingIn(true);
         sessionStorage.setItem('access_token', accessToken);
         sessionStorage.setItem('id_token', idToken);
 
         window.location.hash = '';
 
-        if (redirectPath === 'create') createRoom();
-        else navigateTo(`/${redirectPath}`, { replace: true });
+        fetch(`${api}users/create`, { method: 'POST', headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
+            'Content-Type': 'application/json',
+          },
+        body: JSON.stringify({upn: `user1@example.com`})}) // TODO remove once BE gets upn from token
+          .then(response => response.json())
+          .then(userData => {
+            setUser(userData);
+            if (redirectPath === 'create') createRoom(userData);
+            else navigateTo(`/${redirectPath}`, { replace: true });
+          });
       }
     }
   }, []);
@@ -56,7 +66,7 @@ export default function RoomChoose() {
         onSubmit={
           event => {
             event.preventDefault();
-            if (sessionStorage.getItem('access_token')) createRoom();
+            if (user) createRoom(user);
             else handleSignIn('create');
           }
         }
