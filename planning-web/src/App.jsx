@@ -17,7 +17,7 @@ export default function App() {
           Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({upn: `user1@example.com`})}) // TODO remove once BE gets upn from token
+      })
         .then(response => response.json())
         .then(setUser);
     }
