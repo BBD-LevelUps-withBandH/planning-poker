@@ -18,8 +18,9 @@ const createRoom = async (roomName, ownerId, closed = false) => {
     [roomName, ownerId, closed]
   );
   const row = result.rows[0];
-  return new Room(row.room_id, row.room_name, row.owner_id, row.closed);
+  return new Room(row.room_id, row.room_uuid, row.room_name, row.owner_id, row.closed);
 };
+
 
 module.exports = {
   getRoomById,
