@@ -1,16 +1,17 @@
 const client = require('./databaseConnection');
-const Room = require('../models/room');
 
 const tableName = 'rooms';
 const userTableName = 'users';
 
 const getRoomByUuid = async (roomUUID) => {
-  const query = await client.query(`SELECT owner_id FROM ${tableName} WHERE room_uuid = $1`, [roomUUID]);
+  const query = await client.query(`SELECT owner_id, current_ticket_id FROM ${tableName} WHERE room_uuid = $1`, [roomUUID]);
   if (query.rows.length === 0) {
     throw new Error(`Room with ID ${roomUUID} not found`);
   }
-  const row = query.rows[0];
-  return {ownerId: row.owner_id};
+  const room = query.rows[0];
+  const userResult = await client.query(`SELECT upn FROM ${userTableName} WHERE user_id = $1`, [room.owner_id]);
+  const user = userResult.rows[0];
+  return {owner: user.upn, current_ticket: room.current_ticket_id};
 };
 
 const createRoom = async (roomName, upn, closed = false) => {
@@ -25,7 +26,7 @@ const createRoom = async (roomName, upn, closed = false) => {
   const roomResult = await client.query(roomQuery, [roomName, ownerId, closed]);
   const row = roomResult.rows[0];
 
-  return new Room(row.room_id, row.room_uuid, row.room_name, ownerId, row.closed, upn, row.current_ticket_id);
+  return { roomUuid: row.room_uuid };
 };
 
 module.exports = {
