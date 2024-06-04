@@ -6,14 +6,14 @@ const roomTableName = 'rooms';
 
 const getAllTicketsInRoom = async (roomUuid) => {
   const query = `
-    SELECT t.ticket_id, t.ticket_name
+    SELECT t.ticket_id, t.ticket_name, t.revealed
     FROM ${tableName} t
     JOIN ${roomTableName} r ON t.room_id = r.room_id
     WHERE r.room_uuid = $1;
   `;
 
   const result = await client.query(query, [roomUuid]);
-  return result.rows.map(row => new Ticket(row.ticket_id, row.ticket_name));
+  return result.rows.map(row => new Ticket(row.ticket_id, row.ticket_name, row.revealed));
 };
 
 const createTicket = async (ticketName, roomId) => {

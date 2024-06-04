@@ -1,4 +1,4 @@
-const { createRoom, getRoomById } = require('../data/roomRepository');
+const { createRoom, getRoomByUuid } = require('../data/roomRepository');
 const { getAllUsersInRoom, addUserToRoom } = require('../data/userInRoomRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
 const { getAllTicketsInRoom } = require('../data/ticketRepository');
@@ -8,17 +8,17 @@ function roomController(router) {
   router.post(
     '/create',
     handleErrors(async (req, res) => {
-      const { roomName, ownerId, closed } = req.body;
-      const newRoom = await createRoom(roomName, ownerId, closed);
+      const { roomName, upn, closed } = req.body;
+      const newRoom = await createRoom(roomName, upn, closed);
       res.status(201).json(newRoom);
     })
   );
 
   router.get(
-    '/:id',
+    '/:uuid',
     handleErrors(async (req, res) => {
       const roomUUID = req.params.id;
-      const room = await getRoomById(roomUUID);
+      const room = await getRoomByUuid(roomUUID);
       res.json(room);
     })
   );
