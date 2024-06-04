@@ -29,9 +29,9 @@ const createRoom = async (roomName, upn, closed = false) => {
   return { roomUuid: row.room_uuid };
 };
 
-const updateRoomTicket = async (roomUuid, ticketId) => {
-  const query = `UPDATE ${tableName} SET current_ticket_id = $1 WHERE room_id = (SELECT room_id FROM ${tableName} WHERE room_uuid = $2)`;
-  await client.query(query, [ticketId, roomUuid]);
+const updateRoomTicket = async (roomUuid, ticketId, upn) => {
+  const query = `UPDATE ${tableName} SET current_ticket_id = $1 WHERE room_id = (SELECT room_id FROM ${tableName} WHERE room_uuid = $2) AND owner_id = (SELECT user_id from users where upn=$3)`;
+  await client.query(query, [ticketId, roomUuid, upn]);
   return { roomUuid: roomUuid };
 }
 

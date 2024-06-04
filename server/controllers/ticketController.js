@@ -8,8 +8,13 @@ function ticketController(router) {
     '/create', verifyToken,
     handleErrors(async (req, res) => {
       const { ticketName, roomUuid } = req.body;
-      const newTicket = await createTicket(ticketName, roomUuid);
-      res.status(201).json(newTicket);
+      const upn = req.upn;
+      const newTicket = await createTicket(ticketName, roomUuid, upn);
+      if(!newTicket){
+        res.status(403).send();
+      } else {
+        res.status(201).json(newTicket);
+      }
     })
   );
 
@@ -17,7 +22,8 @@ function ticketController(router) {
     '/update', verifyToken,
     handleErrors(async (req, res) => {
       const { ticketId, revealed } = req.body;
-      let ticketID = await updateTicketReveal(ticketId, revealed);
+      const upn = req.upn;
+      let ticketID = await updateTicketReveal(ticketId, revealed, upn);
       res.status(201).json(ticketID);
     })
   );

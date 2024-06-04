@@ -15,7 +15,17 @@ const getAllTicketsInRoom = async (roomUuid) => {
   return result.rows.map(row => ({ticketId: row.ticket_id, ticketName: row.ticket_name, revealed: row.revealed}));
 };
 
-const createTicket = async (ticketName, room_Uuid) => {
+const createTicket = async (ticketName, room_Uuid, upn) => {
+
+  const checkOwner = `
+   select room_id from rooms where room_uuid=$1 and owner_id=(select user_id from users where upn=$2)
+  `;
+
+  const check = await client.query(checkOwner, [room_Uuid, upn]);
+  const room = check.rows[0];
+  if (!room) return undefined;
+
+
   const result = await client.query(
     `INSERT INTO ${tableName} (ticket_name, room_id) VALUES ($1, (SELECT room_id FROM rooms WHERE room_uuid = $2)) RETURNING *`,
     [ticketName, room_Uuid]
@@ -24,14 +34,16 @@ const createTicket = async (ticketName, room_Uuid) => {
   return { ticketId: row.ticket_id, ticketName: row.ticket_name, revealed: row.revealed };
 };
 
-const updateTicketReveal = async (ticketId, revealed) => {
+const updateTicketReveal = async (ticketId, revealed, upn) => {
   const query = `
   UPDATE ${tableName}
   SET revealed = $1
   WHERE ticket_id = $2
+  AND
+  room_id = (select room_id from rooms where owner_id=(select user_id from users where upn=$3))
 `;
 
-  let result = await client.query(query, [revealed, ticketId]);
+  let result = await client.query(query, [revealed, ticketId, upn]);
   return {ticketId: ticketId};
 }
 
