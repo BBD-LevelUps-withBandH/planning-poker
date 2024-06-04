@@ -1,9 +1,7 @@
 databaseChangeLog:
    - include:
-      file: ./database/tableCreates_new.sql
+      file: ./database/tableCreates.sql
    - include:
-      file: ./database/tableAlters_new.sql
+      file: ./database/tableAlters.sql
    - include:
-      file: ./database/mockData/dummyData_new.sql
-   - include:
-      file: ./database/createTables_new.sql
+      file: ./database/mockData/dummyData.sql

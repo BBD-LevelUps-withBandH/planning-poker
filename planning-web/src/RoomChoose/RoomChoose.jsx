@@ -1,14 +1,18 @@
 import React from 'react';
 import './RoomChoose.css';
-import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { api } from '../backend.js';
 
 /**
  * @returns {JSX.Element} RoomChoose page
  */
 export default function RoomChoose() {
-  const navigateTo = useNavigate();
+  const handleSignIn = (redirectPath) => {
+    const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
+    const redirectUri = import.meta.env.VITE_REDIRECT_URI;
+    const clientId = import.meta.env.VITE_CLIENT_ID;
+    window.location.href = `${cognitoDomain}/oauth2/authorize?identity_provider=Google&redirect_uri=${redirectUri}&response_type=token&client_id=${clientId}&scope=email openid phone&state=${redirectPath}`;
+  };
+
   return (
     <main className='room-choose v-container'>
       <form
@@ -26,7 +30,7 @@ export default function RoomChoose() {
               }),
             })
               .then(response => response.json())
-              .then(data => navigateTo(`room/${data.roomUuid}`));
+              .then(data => handleSignIn(`room/${data.roomUuid}`));
           }
         }
       >
@@ -39,7 +43,7 @@ export default function RoomChoose() {
           event => {
             event.preventDefault();
             const form = new FormData(event.target);
-            navigateTo(`room/${form.get('code')}`);
+            handleSignIn(`room/${form.get('code')}`);
           }
         }
       >
