@@ -4,7 +4,7 @@ const { handleErrors } = require('../middlewares/errorHandler');
 function ticketController(router) {
 
   router.post(
-    '/create',
+    '/create', verifyToken,
     handleErrors(async (req, res) => {
       const { ticketName, roomId } = req.body;
       const newTicket = await createTicket(ticketName, roomId);

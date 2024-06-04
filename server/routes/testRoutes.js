@@ -9,7 +9,7 @@ testRoutes.get('/', function (req, res) {
 
 testRoutes.get('/protected', verifyToken, (req, res) => {
     console.log(req.user);
-  res.send(`Hello ${req.user.email}, your access token is valid!`);
+  res.send(`Hello ${req.upn}, your access token is valid!`);
 });
 
 module.exports = testRoutes;

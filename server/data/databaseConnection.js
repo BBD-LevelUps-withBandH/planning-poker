@@ -5,17 +5,32 @@ require("dotenv").config({
   path: path.join(__dirname, "db.env"),
 });
 
-const client = new Client({
-  user: "dbadmin",
-  host: process.env.DB_URL,
-  database: 'poker',
-  password: process.env.DB_PASSWORD,
-  port: 5432,
-  ssl: {
-    require: true,
-    rejectUnauthorized: false,
-  },
-});
+const debug_mode=process.env.DEBUG==='true';
+
+let client;
+
+if(debug_mode){
+  client = new Client({
+    user: "postgres",
+    host: process.env.DB_URL,
+    database: 'poker',
+    password: process.env.DB_PASSWORD,
+    port: 5432,
+  });
+} else {
+  client = new Client({
+    user: "dbadmin",
+    host: process.env.DB_URL,
+    database: 'poker',
+    password: process.env.DB_PASSWORD,
+    port: 5432,
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  });
+}
+
 
 
 client.connect(err => {

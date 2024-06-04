@@ -6,16 +6,17 @@ const { getAllTicketsInRoom } = require('../data/ticketRepository');
 function roomController(router) {
 
   router.post(
-    '/create',
+    '/create', verifyToken,
     handleErrors(async (req, res) => {
-      const { roomName, upn, closed } = req.body;
+      const { roomName, closed } = req.body;
+      const upn = req.upn;
       const newRoom = await createRoom(roomName, upn, closed);
       res.status(201).json(newRoom);
     })
   );
 
   router.get(
-    '/:uuid',
+    '/:uuid', verifyToken,
     handleErrors(async (req, res) => {
       const roomUUID = req.params.uuid;
       const room = await getRoomByUuid(roomUUID);
@@ -24,7 +25,7 @@ function roomController(router) {
   );
 
   router.get(
-    '/:uuid/users',
+    '/:uuid/users', verifyToken,
     handleErrors(async (req, res) => {
       const roomUuid = req.params.uuid;
       const usersInRoom = await getAllUsersInRoom(roomUuid);
@@ -33,17 +34,17 @@ function roomController(router) {
   );
 
   router.post(
-    '/:uuid/users',
+    '/:uuid/users', verifyToken,
     handleErrors(async (req, res) => {
       const roomUuid = req.params.uuid;
-      const { upn } = req.body;
+      const upn = req.upn;
       const userInRoom = await addUserToRoom(upn, roomUuid);
       res.status(201).json(userInRoom);
     })
   );
 
   router.get(
-    '/:uuid/tickets',
+    '/:uuid/tickets', verifyToken,
     handleErrors(async (req, res) => {
       const roomUuid = req.params.uuid;
       const tickets = await getAllTicketsInRoom(roomUuid);
