@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import './Agenda.css';
 import PropTypes from 'prop-types';
-import {api} from "../backend.js";
+import { api } from '../backend.js';
 
 /**
  *
@@ -53,7 +53,17 @@ export default function Agenda({ tickets, setTickets, currentTopic, user, votes,
               event => {
                 event.preventDefault();
                 const topic = new FormData(event.target).get('topic');
-                fetch(`${api}tickets/create`, { method: 'POST', headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}`, 'Content-Type': 'application/json'}, body: JSON.stringify({ ticketName: topic, roomUuid: id })})
+                fetch(`${api}tickets/create`, {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    ticketName: topic,
+                    roomUuid: id,
+                  }),
+                });
                 setTickets(prevState => [ // So user sees the new ticket straight away
                   ...prevState,
                   { ticketName: topic },

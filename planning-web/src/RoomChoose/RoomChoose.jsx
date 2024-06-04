@@ -6,9 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import handleSignIn from '../handleSignIn.js';
 
 /**
+ * @param {object} props - react props
+ * @param {Function} props.setUser - setState function
+ * @param {{upn: string}} props.user - user details
  * @returns {JSX.Element} RoomChoose page
  */
-export default function RoomChoose({setUser, user}) {
+export default function RoomChoose({ setUser, user }) {
   const navigateTo = useNavigate();
   const [loggingIn, setLoggingIn] = useState(false);
 
@@ -42,7 +45,8 @@ export default function RoomChoose({setUser, user}) {
         window.location.hash = '';
 
         fetch(`${api}users/create`, {
-          method: 'POST', headers: {
+          method: 'POST',
+          headers: {
             Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
             'Content-Type': 'application/json',
           },
@@ -57,7 +61,7 @@ export default function RoomChoose({setUser, user}) {
     }
   }, []);
 
-  if (loggingIn) return <h2>Logging you in...</h2>
+  if (loggingIn) return <h2>Logging you in...</h2>;
 
   return (
     <main className='room-choose v-container'>

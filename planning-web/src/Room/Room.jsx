@@ -7,9 +7,11 @@ import { api } from '../backend.js';
 import handleSignIn from '../handleSignIn.js';
 
 /**
+ * @param {object} props - react props
+ * @param {{upn: string}} props.user - user details
  * @returns {JSX.Element} Room page
  */
-export default function Room({user}) {
+export default function Room({ user }) {
   const { id } = useParams();
   const pollTimeMs = 5000;
   const [topic, setTopic] = useState(null);
@@ -30,14 +32,14 @@ export default function Room({user}) {
 
   useEffect(() => {
     if (user) {
-      fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } },)
+      fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
         .then(response => {
           if (response.statusCode === 404) throw response;
           return response.json();
         })
         .then(setRoom)
         .catch(setNotFound);
-      fetch(`${api}vote-types`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } },)
+      fetch(`${api}vote-types`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
         .then(response => response.json())
         .then(setChoices);
     } else { handleSignIn(`room/${id}`); }
@@ -66,7 +68,7 @@ export default function Room({user}) {
         .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
         .then(() => polling && pollUsersInRoom());
 
-      const pollCurrentTopic = () => fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } },)
+      const pollCurrentTopic = () => fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
         .then(response => response.json())
         .then(data => setTopic(tickets.find(ticket => ticket.ticketId === data.current_ticket)))
         .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
@@ -94,7 +96,10 @@ export default function Room({user}) {
         clearTimeout(agenda);
       };
     }
-  }, [room, user]);
+  }, [
+    room,
+    user,
+  ]);
 
   if (notFound || !room) return <h2>Nothing here pal, soz</h2>;
 
@@ -119,7 +124,7 @@ export default function Room({user}) {
             )
           }
           {
-            users.filter(({userId}) => userId !== room.owner).map(({ userId, userInRoomId }, index) => (
+            users.filter(({ userId }) => userId !== room.owner).map(({ userId, userInRoomId }, index) => (
               <UserChoice
                 key={ index }
                 name={ userId }
@@ -178,7 +183,17 @@ export default function Room({user}) {
                 type='button'
                 onClick={
                   () => {
-                    fetch(`${api}tickets/update`, { method: 'POST', headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ticketId: topic.ticketId, revealed: true}) });
+                    fetch(`${api}tickets/update`, {
+                      method: 'POST',
+                      headers: {
+                        Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        ticketId: topic.ticketId,
+                        revealed: true,
+                      }),
+                    });
                     topic.revealed = true; // So user sees instantly
                   }
                 }
@@ -200,8 +215,11 @@ export default function Room({user}) {
                     setTopic(nextTicket); // so user sees straight away
                     fetch(`${api}rooms/${id}/ticket`, {
                       method: 'POST',
-                      headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}`, 'Content-Type': 'application/json'},
-                      body: JSON.stringify({ticketId: nextTicket.ticketId})
+                      headers: {
+                        Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ ticketId: nextTicket.ticketId }),
                     });
                   }
                 }
