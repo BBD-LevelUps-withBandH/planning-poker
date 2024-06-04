@@ -109,7 +109,7 @@ export default function Room({ user }) {
         {topic && <h2 className='container-v'>Current Topic: <p>{topic.ticketName}</p></h2>}
         <ul className='container-vh'>
           {
-            users.length === 0 && (
+            users.filter(({ userId }) => userId !== room.owner).length === 0 && (
               <article className='v-container'>
                 <h3>Nobody is here...</h3>
                 <section className='container'>
@@ -204,7 +204,7 @@ export default function Room({ user }) {
             : null
         }
         {
-          room.owner === user.upn && (!topic || (tickets.indexOf(topic) + 1 < tickets.length && topic.revealed))
+          room.owner === user.upn && ((!topic && tickets.length > 0) || (tickets.indexOf(topic) + 1 < tickets.length && topic.revealed))
             ? (
               <button
                 type='button'
