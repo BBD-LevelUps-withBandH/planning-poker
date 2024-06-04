@@ -31,7 +31,7 @@ function canChangeTopic(hidden, tickets, topic) {
 /**
  * @returns {JSX.Element} Room page
  */
-export default function Room() {
+export default function Room({user}) {
   const { id } = useParams();
   const pollTimeMs = 5000;
   const [topic, setTopic] = useState(null); // TODO make backend
@@ -52,7 +52,7 @@ export default function Room() {
   };
 
   useEffect(() => {
-    if (sessionStorage.getItem('access_token')) {
+    if (user) {
       fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } },)
         .then(response => {
           if (response.statusCode === 404) throw response;
@@ -76,6 +76,7 @@ export default function Room() {
             Authorization: `Bearer ${sessionStorage.getItem('access_token')}`,
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ userId: user.userId }),
         },
       )
         .then(response => response.json())
@@ -159,7 +160,7 @@ export default function Room() {
           }
         </ul>
         {
-          room.ownerId !== userInRoomDetails?.userId && topic
+          room.ownerId !== user.userId && topic
           && <form
             className='container'
             onSubmit={
@@ -201,7 +202,7 @@ export default function Room() {
           </form>
         }
         {
-          room.ownerId === userInRoomDetails?.userId && canReveal(hidden, users, topic)
+          room.ownerId === user.userId && canReveal(hidden, users, topic)
             ? (
               <button
                 type='button'
@@ -217,7 +218,7 @@ export default function Room() {
             : null
         }
         {
-          room.ownerId === userInRoomDetails?.userId && canChangeTopic(hidden, tickets, topic)
+          room.ownerId === user.userId && canChangeTopic(hidden, tickets, topic)
             ? (
               <button
                 type='button'
