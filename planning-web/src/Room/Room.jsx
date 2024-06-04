@@ -34,8 +34,7 @@ function canChangeTopic(hidden, tickets, topic) {
 export default function Room({user}) {
   const { id } = useParams();
   const pollTimeMs = 5000;
-  const [topic, setTopic] = useState(null); // TODO make backend
-  const [hidden, setHidden] = useState(true); // TODO make backend
+  const [topic, setTopic] = useState(null);
   const [choices, setChoices] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [choice, setChoice] = useState(null);
@@ -67,7 +66,7 @@ export default function Room({user}) {
   }, []);
 
   useEffect(() => {
-    if (room) {
+    if (room && user) {
       fetch(
         `${api}rooms/${id}/users`,
         {
@@ -76,16 +75,11 @@ export default function Room({user}) {
             Authorization: `Bearer ${sessionStorage.getItem('access_token')}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userId: user.userId }),
+          body: JSON.stringify({ upn: user.upn }), // TODO remove once gotten from token
         },
       )
         .then(response => response.json())
-        .then(setUserInRoomDetails)
-        .catch(() => setUserInRoomDetails({ // TODO remove once integration supports re-joining
-          userInRoomId: 16,
-          userId: 3,
-          roomId: 1,
-        }));
+        .then(setUserInRoomDetails);
 
       let polling = true;
 
@@ -95,11 +89,11 @@ export default function Room({user}) {
         .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
         .then(() => polling && pollUsersInRoom());
 
-      // const pollCurrentTopic = () => fetch('topic', { headers: { Authorization : `Bearer ${sessionStorage.getItem('access_token')}` } })
-      //   .then(response => response.json())
-      //   .then(setTopic)
-      //   .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
-      //   .then(() => polling && pollCurrentTopic());
+      const pollCurrentTopic = () => fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } },)
+        .then(response => response.json())
+        .then(data => setTopic(tickets.find(ticket => ticket.ticketId === data.current_ticket)))
+        .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
+        .then(() => polling && pollUsersInRoom());
 
       const pollTickets = () => fetch(`${api}rooms/${id}/tickets`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } })
         .then(response => response.json())
@@ -114,17 +108,17 @@ export default function Room({user}) {
         .then(() => polling && pollTickets());
 
       const usersInRoom = setTimeout(pollUsersInRoom, 50);
-      // const currentTopic = setTimeout(pollCurrentTopic, 50);
+      const currentTopic = setTimeout(pollCurrentTopic, 50);
       const agenda = setTimeout(pollTickets, 50);
 
       return () => {
         polling = false;
         clearTimeout(usersInRoom);
-        // clearTimeout(currentTopic);
+        clearTimeout(currentTopic);
         clearTimeout(agenda);
       };
     }
-  }, [room]);
+  }, [room, user]);
 
   if (notFound || !room) return <h2>Nothing here pal, soz</h2>;
 
@@ -154,13 +148,13 @@ export default function Room({user}) {
                 key={ index }
                 name={ userId }
                 choice={ getChoice(userInRoomId) }
-                hidden={ hidden }
+                hidden={ !topic?.revealed }
               />
             ))
           }
         </ul>
         {
-          room.ownerId !== user.userId && topic
+          room.owner !== user.upn && topic
           && <form
             className='container'
             onSubmit={
@@ -202,13 +196,13 @@ export default function Room({user}) {
           </form>
         }
         {
-          room.ownerId === user.userId && canReveal(hidden, users, topic)
+          room.owner === user.upn && topic && !topic.revealed
             ? (
               <button
                 type='button'
                 onClick={
                   () => {
-                    setHidden(false);
+                    // TODO hit backen
                   }
                 }
               >
@@ -218,14 +212,14 @@ export default function Room({user}) {
             : null
         }
         {
-          room.ownerId === user.userId && canChangeTopic(hidden, tickets, topic)
+          room.owner === user.upn && canChangeTopic(!topic?.revealed, tickets, topic)
             ? (
               <button
                 type='button'
                 onClick={
                   () => {
-                    setHidden(true);
                     setTopic(tickets.at(tickets.indexOf(topic) + 1));
+                    // TODO hit backend
                   }
                 }
               >
@@ -236,7 +230,8 @@ export default function Room({user}) {
         }
       </main>
       <Agenda
-        userInRoomDetails={ userInRoomDetails }
+        id={ id }
+        user={ user }
         room={ room }
         votes={
           votes.map(({ ticketId, voteTypeId }) => ({
