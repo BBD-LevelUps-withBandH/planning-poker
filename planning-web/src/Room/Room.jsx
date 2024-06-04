@@ -72,7 +72,7 @@ export default function Room({ user }) {
         .then(response => response.json())
         .then(data => setTopic(tickets.find(ticket => ticket.ticketId === data.current_ticket)))
         .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
-        .then(() => polling && pollUsersInRoom());
+        .then(() => polling && pollCurrentTopic());
 
       const pollTickets = () => fetch(`${api}rooms/${id}/tickets`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
         .then(response => response.json())
