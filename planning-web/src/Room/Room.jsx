@@ -204,7 +204,7 @@ export default function Room({ user }) {
             : null
         }
         {
-          room.owner === user.upn && ((!topic && tickets.length > 0) || (tickets.indexOf(topic) + 1 < tickets.length && topic.revealed))
+          room.owner === user.upn && users.filter(({ userId }) => userId !== room.owner).length > 0 && ((!topic && tickets.length > 0) || (tickets.indexOf(topic) + 1 < tickets.length && topic.revealed))
             ? (
               <button
                 type='button'
