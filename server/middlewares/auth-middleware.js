@@ -5,13 +5,13 @@ require("dotenv").config({
   });
 const jwt = require('jsonwebtoken');
 const jwksRsa = require('jwks-rsa');
-const debug_mode = process.env.MODE === 'debug';
+const debug_mode = process.env.DEBUG === 'debug';
 
 function verifyToken(req, res, next) {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
 
   if (debug_mode) {
-    req.user = { sub: req.headers.authorization, username: "developer" };
+    req.upn = "developer";
     return next();
   }
 
@@ -47,6 +47,7 @@ function verifyToken(req, res, next) {
         return res.status(401).send('Access token is invalid');
       }
       req.user = decoded;
+      req.upn = req.user.email;
       next();
     });
   } catch (error) {

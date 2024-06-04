@@ -4,9 +4,9 @@ const { handleErrors } = require('../middlewares/errorHandler');
 function userController(router) {
 
   router.post(
-    '/create',
+    '/create', verifyToken,
     handleErrors(async (req, res) => {
-      const { upn } = req.body;
+      const upn = req.upn;
       const newUser = await createUser(upn);
       res.status(201).json(newUser);
     })
