@@ -6,20 +6,22 @@ import { useNavigate } from 'react-router-dom';
 import handleSignIn from '../handleSignIn.js';
 
 /**
+ * @param {object} props - react props
+ * @param {Function} props.setUser - setState function
+ * @param {{upn: string}} props.user - user details
  * @returns {JSX.Element} RoomChoose page
  */
-export default function RoomChoose({setUser, user}) {
+export default function RoomChoose({ setUser, user }) {
   const navigateTo = useNavigate();
   const [loggingIn, setLoggingIn] = useState(false);
 
-  const createRoom = user => fetch(`${api}rooms/create`, {
+  const createRoom = () => fetch(`${api}rooms/create`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${sessionStorage.getItem('access_token')}`,
+      Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      upn: user.upn,
       roomName: ':)',
       closed: false,
     }),
@@ -42,22 +44,24 @@ export default function RoomChoose({setUser, user}) {
 
         window.location.hash = '';
 
-        fetch(`${api}users/create`, { method: 'POST', headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
+        fetch(`${api}users/create`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
             'Content-Type': 'application/json',
           },
-        body: JSON.stringify({upn: `user1@example.com`})}) // TODO remove once BE gets upn from token
+        })
           .then(response => response.json())
           .then(userData => {
             setUser(userData);
-            if (redirectPath === 'create') createRoom(userData);
+            if (redirectPath === 'create') createRoom();
             else navigateTo(`/${redirectPath}`, { replace: true });
           });
       }
     }
   }, []);
 
-  if (loggingIn) return <h2>Logging you in...</h2>
+  if (loggingIn) return <h2>Logging you in...</h2>;
 
   return (
     <main className='room-choose v-container'>
@@ -66,7 +70,7 @@ export default function RoomChoose({setUser, user}) {
         onSubmit={
           event => {
             event.preventDefault();
-            if (user) createRoom(user);
+            if (user) createRoom();
             else handleSignIn('create');
           }
         }
@@ -80,7 +84,7 @@ export default function RoomChoose({setUser, user}) {
           event => {
             event.preventDefault();
             const form = new FormData(event.target);
-            if (sessionStorage.getItem('access_token')) { navigateTo(`room/${form.get('code')}`); } else { handleSignIn(`room/${form.get('code')}`); }
+            if (sessionStorage.getItem('id_token')) { navigateTo(`room/${form.get('code')}`); } else { handleSignIn(`room/${form.get('code')}`); }
           }
         }
       >
