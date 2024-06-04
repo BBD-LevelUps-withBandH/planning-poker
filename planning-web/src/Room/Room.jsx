@@ -3,80 +3,134 @@ import './Room.css';
 import { useParams } from 'react-router-dom';
 import UserChoice from '../UserChoice/UserChoice.jsx';
 import Agenda from '../Agenda/Agenda.jsx';
-import PropTypes from 'prop-types';
+import { api } from '../backend.js';
+import handleSignIn from '../handleSignIn.js';
 
 /**
  *
  * @param {boolean} hidden - whether cards are currently hidden
- * @param {Array<{choice: number|string|undefined}>}users - all active room users
- * @param {number} [topic] - current topic number
+ * @param {Array} votes - all active room users
+ * @param {{topicId: string}} [topic] - current topic
  * @returns {boolean} true if you should be able to reveal choices
  */
-function canReveal(hidden, users, topic) {
-  return (hidden && typeof topic === 'number' && users.some(user => user.choice || user.choice === 0));
+function canReveal(hidden, votes, topic) {
+  return hidden && topic && votes.some(({ topicId }) => topicId === topic.topicId);
 }
 
 /**
  *
  * @param {boolean} hidden - whether cards are currently hidden
  * @param {Array} tickets - all room tickets
- * @param {number} [topic] - current topic number
+ * @param {object} [topic] - current topic
  * @returns {boolean} true if you can change to next topic
  */
 function canChangeTopic(hidden, tickets, topic) {
-  return ((topic === null && tickets.length > 0) || (!hidden && tickets.length > topic + 1));
+  return ((!topic && tickets.length > 0) || (!hidden && tickets.length > tickets.indexOf(topic) + 1));
 }
 
 /**
- * @param {object} props - React Props
- * @param {{name: string, choice: number|string|undefined, superMan: boolean|undefined}} props.currentUser - current User
  * @returns {JSX.Element} Room page
  */
-export default function Room({ currentUser }) {
+export default function Room() {
   const { id } = useParams();
-  const [topic, setTopic] = useState(null);
-  const [hidden, setHidden] = useState(true);
-  const choices = [
-    0,
-    1,
-    2,
-    3,
-    5,
-    8,
-    13,
-    '???',
-    '☕',
-  ];
+  const pollTimeMs = 5000;
+  const [topic, setTopic] = useState(null); // TODO make backend
+  const [hidden, setHidden] = useState(true); // TODO make backend
+  const [choices, setChoices] = useState([]);
   const [tickets, setTickets] = useState([]);
-  const [, setChoice] = useState(null);
+  const [choice, setChoice] = useState(null);
   const [users, setUsers] = useState([]);
+  const [room, setRoom] = useState(null);
+  const [votes, setVotes] = useState([]);
+  const [userInRoomDetails, setUserInRoomDetails] = useState(null);
+  const [notFound, setNotFound] = useState(false);
+
+  const getChoice = userInRoomId => {
+    const vote = votes.find(vote => vote.ticketId === topic?.ticketId && userInRoomId === vote.userInRoomId);
+    if (!vote) return;
+    return choices.find(choice => choice.voteTypeId === vote.voteId);
+  };
+
   useEffect(() => {
-    if (!currentUser.superMan) {
-      const timeout = setTimeout(() => setUsers(prevState => [
-        ...prevState,
-        currentUser,
-      ]));
-      return () => clearTimeout(timeout);
+    if (sessionStorage.getItem('access_token')) {
+      fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } },)
+        .then(response => {
+          if (response.statusCode === 404) throw response;
+          return response.json();
+        })
+        .then(setRoom)
+        .catch(setNotFound);
+      fetch(`${api}vote-types`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } },)
+        .then(response => response.json())
+        .then(setChoices);
+    } else { handleSignIn(`room/${id}`); }
+  }, []);
+
+  useEffect(() => {
+    if (room) {
+      fetch(
+        `${api}rooms/${id}/users`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+        .then(response => response.json())
+        .then(setUserInRoomDetails)
+        .catch(() => setUserInRoomDetails({ // TODO remove once integration supports re-joining
+          userInRoomId: 16,
+          userId: 3,
+          roomId: 1,
+        }));
+
+      let polling = true;
+
+      const pollUsersInRoom = () => fetch(`${api}rooms/${id}/users`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } })
+        .then(response => response.json())
+        .then(setUsers)
+        .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
+        .then(() => polling && pollUsersInRoom());
+
+      // const pollCurrentTopic = () => fetch('topic', { headers: { Authorization : `Bearer ${sessionStorage.getItem('access_token')}` } })
+      //   .then(response => response.json())
+      //   .then(setTopic)
+      //   .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
+      //   .then(() => polling && pollCurrentTopic());
+
+      const pollTickets = () => fetch(`${api}rooms/${id}/tickets`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } })
+        .then(response => response.json())
+        .then(tickets => {
+          setTickets(tickets);
+          setTopic(tickets[1]);
+          return Promise.all(tickets.map(({ ticketId }) => fetch(`${api}votes/ticket/${ticketId}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } }).then(response => response.json())));
+        })
+        .then(ticketVotes => ticketVotes.flat())
+        .then(setVotes)
+        .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
+        .then(() => polling && pollTickets());
+
+      const usersInRoom = setTimeout(pollUsersInRoom, 50);
+      // const currentTopic = setTimeout(pollCurrentTopic, 50);
+      const agenda = setTimeout(pollTickets, 50);
+
+      return () => {
+        polling = false;
+        clearTimeout(usersInRoom);
+        // clearTimeout(currentTopic);
+        clearTimeout(agenda);
+      };
     }
-  }, []);
-  useEffect(() => {
-    const interval = setInterval(() => setUsers(prevState => [
-      ...prevState,
-      {
-        name: 'Dummy',
-        choice: Math.floor(Math.random() * 13),
-      },
-    ]), 5000); // TODO remove once implemented
-    return () => clearInterval(interval);
-  }, []);
+  }, [room]);
+
+  if (notFound || !room) return <h2>Nothing here pal, soz</h2>;
+
   return (
     <article className='room container'>
       <main className='v-container-vh'>
-        {
-          topic === null
-            ? null
-            : <h2 className='container-v'>Current Topic: <p>{tickets[topic].topic}</p></h2>
-        }
+        {topic && <h2 className='container-v'>Current Topic: <p>{topic.ticketName}</p></h2>}
         <ul className='container-vh'>
           {
             users.length === 0 && (
@@ -94,24 +148,36 @@ export default function Room({ currentUser }) {
             )
           }
           {
-            users.map(({ name, choice }, index) => (
+            users.map(({ userId, userInRoomId }, index) => (
               <UserChoice
                 key={ index }
-                name={ name }
-                choice={ choice }
+                name={ userId }
+                choice={ getChoice(userInRoomId) }
                 hidden={ hidden }
               />
             ))
           }
         </ul>
         {
-          !currentUser.superMan && typeof topic === 'number'
+          room.ownerId !== userInRoomDetails.userId && topic
           && <form
             className='container'
             onSubmit={
               event => {
                 event.preventDefault();
-                // TODO send to BE
+                fetch(`${api}votes/create`, {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    userInRoomId: userInRoomDetails.userInRoomId,
+                    voteTypeId: choice.voteTypeId,
+                    ticketId: topic.ticketId,
+                  }),
+                })
+                  .then(response => response.ok || setChoice(null));
               }
             }
           >
@@ -119,32 +185,29 @@ export default function Room({ currentUser }) {
             {
               choices.map((value, i) => (
                 <button
-                  className={ currentUser.choice === value ? 'chosen' : undefined }
+                  className={ choice === value ? 'chosen' : undefined }
                   type='submit'
                   key={ i }
                   onClick={
                     () => {
-                      currentUser.choice = value;
                       setChoice(value);
                     }
                   }
                 >
-                  {value}
+                  {value.vote}
                 </button>
               ))
             }
           </form>
         }
         {
-          currentUser.superMan && canReveal(hidden, users, topic)
+          room.ownerId === userInRoomDetails.userId && canReveal(hidden, users, topic)
             ? (
               <button
                 type='button'
                 onClick={
                   () => {
                     setHidden(false);
-                    const voters = users.filter(user => user.choice || user.choice === 0);
-                    tickets[topic].score = voters.reduce((acc, currentValue) => acc + currentValue.choice, 0) / voters.length;
                   }
                 }
               >
@@ -154,15 +217,14 @@ export default function Room({ currentUser }) {
             : null
         }
         {
-          currentUser.superMan && canChangeTopic(hidden, tickets, topic)
+          room.ownerId === userInRoomDetails.userId && canChangeTopic(hidden, tickets, topic)
             ? (
               <button
                 type='button'
                 onClick={
                   () => {
                     setHidden(true);
-                    setTopic(prev => (prev === null ? 0 : prev + 1));
-                    for (const roomUser of users) roomUser.choice = undefined;
+                    setTopic(tickets.at(tickets.indexOf(topic) + 1));
                   }
                 }
               >
@@ -173,7 +235,14 @@ export default function Room({ currentUser }) {
         }
       </main>
       <Agenda
-        currentUser={ currentUser }
+        userInRoomDetails={ userInRoomDetails }
+        room={ room }
+        votes={
+          votes.map(({ ticketId, voteTypeId }) => ({
+            ticketId,
+            vote: choices.find(choice => choice.voteTypeId === voteTypeId)?.vote,
+          }))
+        }
         tickets={ tickets }
         setTickets={ setTickets }
         currentTopic={ topic }
@@ -181,14 +250,3 @@ export default function Room({ currentUser }) {
     </article>
   );
 }
-
-Room.propTypes = {
-  currentUser: PropTypes.shape({
-    name: PropTypes.string,
-    choice: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-    ]),
-    superMan: PropTypes.bool,
-  }),
-};
