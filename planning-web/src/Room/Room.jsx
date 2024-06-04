@@ -182,7 +182,7 @@ export default function Room({ user }) {
           </form>
         }
         {
-          room.owner === user.upn && topic && !topic.revealed
+          room.owner === user.upn && topic && !topic.revealed && votes.some(vote => vote.ticketId === topic.ticketId)
             ? (
               <button
                 type='button'
