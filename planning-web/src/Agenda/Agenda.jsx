@@ -14,26 +14,36 @@ import PropTypes from 'prop-types';
  * @returns {JSX.Element} Agenda Component
  */
 export default function Agenda({ tickets, setTickets, currentTopic, userInRoomDetails, votes, room }) {
-  function getTicketBody ({ticketName, ticketId}, index) {
-    const ticketVotes = votes.filter(vote => vote.ticketId === ticketId && !isNaN(Number(vote.vote)));
+
+  /**
+   * @param {object} value - array element
+   * @param {string} value.ticketName - displayed ticket name
+   * @param {string} value.ticketId - ticket id
+   * @param {number} index - index of element in array
+   * @returns {JSX.Element} Ticket Body
+   */
+  function getTicketBody({ ticketName, ticketId }, index) {
+    const ticketVotes = votes.filter(vote => vote.ticketId === ticketId && !Number.isNaN(Number(vote.vote)));
     return (
       <section
-        className={`container-v${currentTopic?.ticketId === ticketId ? ' current' : ''}`}
-        key={index}
+        className={ `container-v${currentTopic?.ticketId === ticketId ? ' current' : ''}` }
+        key={ index }
       >
         <li>{ticketName}</li>
-        <p>{ticketVotes.length > 0 && tickets.indexOf(currentTopic) > index && (ticketVotes.reduce((sum, {vote}) => sum + Number(vote), 0) / ticketVotes.length).toFixed(1)}</p>
+        <p>{
+          ticketVotes.length > 0
+          && tickets.indexOf(currentTopic) > index
+          && (ticketVotes.reduce((sum, { vote }) => sum + Number(vote), 0) / ticketVotes.length).toFixed(1)
+        }</p>
       </section>
-    )
+    );
   }
 
   return (
     <aside className='agenda v-container-h'>
       <h2>Agenda:</h2>
       <ol className='v-container'>
-        {
-          tickets.map(getTicketBody)
-        }
+        {tickets.map(getTicketBody)}
         {
           room.ownerId === userInRoomDetails?.userId
           && <form

@@ -1,27 +1,32 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import './RoomChoose.css';
 import { useNavigate } from 'react-router-dom';
-import { createUUID } from '../chatgpt/uuid.js';
 import PropTypes from 'prop-types';
+import { api } from '../backend.js';
 
 /**
- * @param {object} props - React Props
- * @param {Dispatch<SetStateAction<object>>} props.setUser - set State for user
  * @returns {JSX.Element} RoomChoose page
  */
-export default function RoomChoose({ setUser }) {
+export default function RoomChoose() {
   const navigateTo = useNavigate();
   return (
     <main className='room-choose v-container'>
       <form
         className='v-container'
         onSubmit={
-          () => {
-            setUser(prevState => ({
-              ...prevState,
-              superMan: true,
-            }));
-            navigateTo(`room/${createUUID()}`);
+          event => {
+            event.preventDefault();
+            fetch(`${api}rooms/create`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ownerId: 1, // TODO link to cofnito
+                roomName: ':)',
+                closed: false,
+              }),
+            })
+              .then(response => response.json())
+              .then(data => navigateTo(`room/${data.roomUuid}`));
           }
         }
       >

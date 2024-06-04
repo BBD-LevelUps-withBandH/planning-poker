@@ -3,6 +3,7 @@ import './Room.css';
 import { useParams } from 'react-router-dom';
 import UserChoice from '../UserChoice/UserChoice.jsx';
 import Agenda from '../Agenda/Agenda.jsx';
+import { api } from '../backend.js';
 
 /**
  *
@@ -12,7 +13,7 @@ import Agenda from '../Agenda/Agenda.jsx';
  * @returns {boolean} true if you should be able to reveal choices
  */
 function canReveal(hidden, votes, topic) {
-  return hidden && topic && votes.some(({topicId}) => topicId === topic.topicId);
+  return hidden && topic && votes.some(({ topicId }) => topicId === topic.topicId);
 }
 
 /**
@@ -31,8 +32,7 @@ function canChangeTopic(hidden, tickets, topic) {
  */
 export default function Room() {
   const { id } = useParams();
-  const api = 'https://api.planning-poker.projects.bbdgrad.com/';
-  const pollTimeMs = 5_000;
+  const pollTimeMs = 5000;
   const [topic, setTopic] = useState(null); // TODO make backend
   const [hidden, setHidden] = useState(true); // TODO make backend
   const [choices, setChoices] = useState([]);
@@ -44,11 +44,11 @@ export default function Room() {
   const [userInRoomDetails, setUserInRoomDetails] = useState(null);
   const [notFound, setNotFound] = useState(false);
 
-  const getChoice = (userInRoomId) => {
+  const getChoice = userInRoomId => {
     const vote = votes.find(vote => vote.ticketId === topic?.ticketId && userInRoomId === vote.userInRoomId);
     if (!vote) return;
-    return choices.find(choice => choice.voteTypeId === vote.voteId)
-  }
+    return choices.find(choice => choice.voteTypeId === vote.voteId);
+  };
 
   useEffect(() => {
     fetch(`${api}rooms/${id}`)
@@ -68,45 +68,54 @@ export default function Room() {
 
   useEffect(() => {
     if (room) {
-      // fetch(`${api}rooms/${id}/users`,
-      //   {method: 'POST', body: JSON.stringify({userId: 3})})
-      //   .then(response => response.json())
-      //   .then(setUserInRoomDetails);
-      setUserInRoomDetails({
-        "userInRoomId": 16,
-        "userId": 3,
-        "roomId": 1
-      });
+      fetch(
+        `${api}rooms/${id}/users`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ userId: 1 }), // TODO integrate with cognito
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
+        .then(response => response.json())
+        .then(setUserInRoomDetails)
+        .catch(() => setUserInRoomDetails({ // TODO remove once integration supports re-joining
+          userInRoomId: 16,
+          userId: 3,
+          roomId: 1,
+        }));
+
+      let polling = true;
 
       const pollUsersInRoom = () => fetch(`${api}rooms/${id}/users`)
         .then(response => response.json())
         .then(setUsers)
         .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
-        .then(pollUsersInRoom);
+        .then(() => polling && pollUsersInRoom());
 
       // const pollCurrentTopic = () => fetch('topic')
       //   .then(response => response.json())
       //   .then(setTopic)
       //   .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
-      //   .then(pollCurrentTopic);
+      //   .then(() => polling && pollCurrentTopic());
 
       const pollTickets = () => fetch(`${api}rooms/${id}/tickets`)
         .then(response => response.json())
         .then(tickets => {
           setTickets(tickets);
           setTopic(tickets[1]);
-          return Promise.all(tickets.map(({ticketId}) => fetch(`${api}votes/ticket/${ticketId}`).then(response => response.json())))
+          return Promise.all(tickets.map(({ ticketId }) => fetch(`${api}votes/ticket/${ticketId}`).then(response => response.json())));
         })
         .then(ticketVotes => ticketVotes.flat())
         .then(setVotes)
         .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
-        .then(pollTickets);
+        .then(() => polling && pollTickets());
 
       const usersInRoom = setTimeout(pollUsersInRoom, 50);
       // const currentTopic = setTimeout(pollCurrentTopic, 50);
       const agenda = setTimeout(pollTickets, 50);
 
       return () => {
+        polling = false;
         clearTimeout(usersInRoom);
         // clearTimeout(currentTopic);
         clearTimeout(agenda);
@@ -119,9 +128,7 @@ export default function Room() {
   return (
     <article className='room container'>
       <main className='v-container-vh'>
-        {
-          topic && <h2 className='container-v'>Current Topic: <p>{topic.ticketName}</p></h2>
-        }
+        {topic && <h2 className='container-v'>Current Topic: <p>{topic.ticketName}</p></h2>}
         <ul className='container-vh'>
           {
             users.length === 0 && (
@@ -158,7 +165,12 @@ export default function Room() {
                 event.preventDefault();
                 fetch(`${api}votes/create`, {
                   method: 'POST',
-                  body: JSON.stringify({ userInRoomId: userInRoomDetails.userInRoomId, voteTypeId: choice.voteTypeId, ticketId: topic.ticketId}),
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    userInRoomId: userInRoomDetails.userInRoomId,
+                    voteTypeId: choice.voteTypeId,
+                    ticketId: topic.ticketId,
+                  }),
                 })
                   .then(response => response.ok || setChoice(null));
               }
@@ -220,7 +232,12 @@ export default function Room() {
       <Agenda
         userInRoomDetails={ userInRoomDetails }
         room={ room }
-        votes={ votes.map(({ticketId, voteTypeId}) => ({ticketId, vote: choices.find(choice => choice.voteTypeId === voteTypeId)?.vote})) }
+        votes={
+          votes.map(({ ticketId, voteTypeId }) => ({
+            ticketId,
+            vote: choices.find(choice => choice.voteTypeId === voteTypeId)?.vote,
+          }))
+        }
         tickets={ tickets }
         setTickets={ setTickets }
         currentTopic={ topic }
