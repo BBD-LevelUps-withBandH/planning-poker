@@ -16,16 +16,27 @@ const getAllTicketsInRoom = async (roomUuid) => {
   return result.rows.map(row => new Ticket(row.ticket_id, row.ticket_name, row.revealed));
 };
 
-const createTicket = async (ticketName, roomId) => {
+const createTicket = async (ticketName, room_Uuid) => {
   const result = await client.query(
-    `INSERT INTO ${tableName} (ticket_name, room_id) VALUES ($1, $2) RETURNING *`,
-    [ticketName, roomId]
+    `INSERT INTO ${tableName} (ticket_name, room_id) VALUES ($1, SELECT room_id FROM rooms WHERE room_uuid = $2) RETURNING *`,
+    [ticketName, room_Uuid]
   );
   const row = result.rows[0];
   return new Ticket(row.ticket_id, row.ticket_name, row.room_id);
 };
 
+const updateTicketReveal = async (ticketId, revealed) => {
+  const query = `
+  UPDATE ${tableName}
+  SET revealed = $1
+  WHERE ticket_id = $2
+`;
+
+  await client.query(query, [revealed, ticketId]);
+}
+
 module.exports = {
   getAllTicketsInRoom,
   createTicket,
+  updateTicketReveal,
 };
