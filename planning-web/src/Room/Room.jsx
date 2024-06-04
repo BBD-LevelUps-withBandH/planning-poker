@@ -17,6 +17,7 @@ export default function Room({ user }) {
   const [topic, setTopic] = useState(null);
   const [choices, setChoices] = useState([]);
   const [tickets, setTickets] = useState([]);
+  const [roomPollData, setRoomPollData] = useState(null);
   const [choice, setChoice] = useState(null);
   const [users, setUsers] = useState([]);
   const [room, setRoom] = useState(null);
@@ -29,6 +30,10 @@ export default function Room({ user }) {
     if (!vote) return;
     return choices.find(choice => choice.voteTypeId === vote.voteId);
   };
+
+  useEffect(() => {
+    if (roomPollData && tickets.length) setTopic(tickets.find(ticket => ticket.ticketId === roomPollData.current_ticket));
+  }, [roomPollData, tickets]);
 
   useEffect(() => {
     if (user) {
@@ -70,7 +75,7 @@ export default function Room({ user }) {
 
       const pollCurrentTopic = () => fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
         .then(response => response.json())
-        .then(data => setTopic(tickets.find(ticket => ticket.ticketId === data.current_ticket)))
+        .then(setRoomPollData)
         .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
         .then(() => polling && pollCurrentTopic());
 
