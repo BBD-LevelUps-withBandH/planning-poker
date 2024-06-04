@@ -159,7 +159,7 @@ export default function Room() {
           }
         </ul>
         {
-          room.ownerId !== userInRoomDetails.userId && topic
+          room.ownerId !== userInRoomDetails?.userId && topic
           && <form
             className='container'
             onSubmit={
@@ -201,7 +201,7 @@ export default function Room() {
           </form>
         }
         {
-          room.ownerId === userInRoomDetails.userId && canReveal(hidden, users, topic)
+          room.ownerId === userInRoomDetails?.userId && canReveal(hidden, users, topic)
             ? (
               <button
                 type='button'
@@ -217,7 +217,7 @@ export default function Room() {
             : null
         }
         {
-          room.ownerId === userInRoomDetails.userId && canChangeTopic(hidden, tickets, topic)
+          room.ownerId === userInRoomDetails?.userId && canChangeTopic(hidden, tickets, topic)
             ? (
               <button
                 type='button'
