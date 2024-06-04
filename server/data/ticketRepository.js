@@ -1,5 +1,4 @@
 const client = require('./databaseConnection');
-const Ticket = require('../models/ticket');
 
 const tableName = 'tickets';
 const roomTableName = 'rooms';
@@ -13,7 +12,7 @@ const getAllTicketsInRoom = async (roomUuid) => {
   `;
 
   const result = await client.query(query, [roomUuid]);
-  return result.rows.map(row => new Ticket(row.ticket_id, row.ticket_name, row.revealed));
+  return result.rows.map(row => ({ticketId: row.ticket_id, ticketName: row.ticket_name, revealed: row.revealed}));
 };
 
 const createTicket = async (ticketName, room_Uuid) => {
@@ -22,7 +21,7 @@ const createTicket = async (ticketName, room_Uuid) => {
     [ticketName, room_Uuid]
   );
   const row = result.rows[0];
-  return new Ticket(row.ticket_id, row.ticket_name, row.room_id);
+  return { ticketId: row.ticket_id, ticketName: row.ticket_name, revealed: row.revealed };
 };
 
 const updateTicketReveal = async (ticketId, revealed) => {
