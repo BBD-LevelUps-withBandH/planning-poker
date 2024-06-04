@@ -58,8 +58,8 @@ function roomController(router) {
     handleErrors(async (req, res) => {
       const roomUuid = req.params.uuid;
       const {ticketId} = req.body;
-      await updateRoomTicket(roomUuid, ticketId);
-      res.status(204);
+      const roomUUID = await updateRoomTicket(roomUuid, ticketId);
+      res.status(201).json(roomUUID);
     })
   );
 }
