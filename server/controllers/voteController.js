@@ -1,5 +1,6 @@
 const { getVotesByTicketId, createVote } = require('../data/voteRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
+const verifyToken  = require('../middlewares/auth-middleware.js');
 
 function voteController(router) {
 

@@ -1,5 +1,6 @@
 const { createUser } = require('../data/userRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
+const verifyToken  = require('../middlewares/auth-middleware.js');
 
 function userController(router) {
 
