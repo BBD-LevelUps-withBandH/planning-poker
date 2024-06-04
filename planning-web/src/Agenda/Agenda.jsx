@@ -1,6 +1,7 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import './Agenda.css';
 import PropTypes from 'prop-types';
+import {api} from "../backend.js";
 
 /**
  *
@@ -9,11 +10,12 @@ import PropTypes from 'prop-types';
  * @param {Dispatch<SetStateAction<Array<{topic: string, score: number}>>>} props.setTickets - setState for tickets
  * @param {{ticketName: string, ticketId: string}} [props.currentTopic] - index of current topic
  * @param {Array<{ticketId: string, vote: string}>} props.votes - all the votes for the room
- * @param {{userId: string}} props.userInRoomDetails - current User
- * @param {{ownerId: string}} props.room - room
+ * @param {{upn: string}} props.user - current User
+ * @param {{owner: string}} props.room - room
+ * @param {string} props.id - room id
  * @returns {JSX.Element} Agenda Component
  */
-export default function Agenda({ tickets, setTickets, currentTopic, userInRoomDetails, votes, room }) {
+export default function Agenda({ tickets, setTickets, currentTopic, user, votes, room, id }) {
   /**
    * @param {object} value - array element
    * @param {string} value.ticketName - displayed ticket name
@@ -44,16 +46,17 @@ export default function Agenda({ tickets, setTickets, currentTopic, userInRoomDe
       <ol className='v-container'>
         {tickets.map(getTicketBody)}
         {
-          room.ownerId === userInRoomDetails?.userId
+          room.owner === user.upn
           && <form
             className='container'
             onSubmit={
               event => {
                 event.preventDefault();
                 const topic = new FormData(event.target).get('topic');
+                fetch(`${api}tickets/create`, { method: 'POST', headers: { Authorization: sessionStorage.getItem('id_token'), 'Content-Type': 'application/json'}, body: JSON.stringify({ ticketName: topic, roomUuid: id })})
                 setTickets(prevState => [
                   ...prevState,
-                  { topic },
+                  { ticketName: topic },
                 ]);
                 event.target.reset();
               }
