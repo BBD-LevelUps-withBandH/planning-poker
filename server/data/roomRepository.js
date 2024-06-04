@@ -32,7 +32,7 @@ const createRoom = async (roomName, upn, closed = false) => {
 const updateRoomTicket = async (roomUuid, ticketId) => {
   const query = `UPDATE ${tableName} SET current_ticket_id = $1 WHERE room_id = (SELECT room_id FROM ${tableName} WHERE room_uuid = $2)`;
   await client.query(query, [ticketId, roomUuid]);
-  return { roomUuid: row.room_uuid };
+  return { roomUuid: roomUuid };
 }
 
 module.exports = {
