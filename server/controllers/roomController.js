@@ -2,6 +2,7 @@ const { createRoom, getRoomByUuid } = require('../data/roomRepository');
 const { getAllUsersInRoom, addUserToRoom } = require('../data/userInRoomRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
 const { getAllTicketsInRoom } = require('../data/ticketRepository');
+const verifyToken  = require('../middlewares/auth-middleware.js');
 
 function roomController(router) {
 

@@ -1,5 +1,6 @@
 const { createTicket } = require('../data/ticketRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
+const verifyToken  = require('../middlewares/auth-middleware.js');
 
 function ticketController(router) {
 
