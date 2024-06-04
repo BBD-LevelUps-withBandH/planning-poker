@@ -1,18 +1,53 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './RoomChoose.css';
 import PropTypes from 'prop-types';
-import {api} from "../backend.js";
+import { api } from '../backend.js';
+import { useNavigate } from 'react-router-dom';
+import handleSignIn from '../handleSignIn.js';
 
 /**
  * @returns {JSX.Element} RoomChoose page
  */
 export default function RoomChoose() {
-  const handleSignIn = (redirectPath) => {
-    const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
-    const redirectUri = import.meta.env.VITE_REDIRECT_URI;
-    const clientId = import.meta.env.VITE_CLIENT_ID;
-    window.location.href = `${cognitoDomain}/oauth2/authorize?identity_provider=Google&redirect_uri=${redirectUri}&response_type=token&client_id=${clientId}&scope=email openid phone&state=${redirectPath}`;
-  };
+  const navigateTo = useNavigate();
+  const [loggingIn, setLoggingIn] = useState(false);
+
+  const createRoom = () => fetch(`${api}rooms/create`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${sessionStorage.getItem('access_token')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      roomName: ':)',
+      closed: false,
+    }),
+  })
+    .then(response => response.json())
+    .then(data => navigateTo(`/room/${data.roomUuid}`));
+
+  useEffect(() => {
+    const { hash } = window.location;
+    if (hash) {
+      setLoggingIn(true);
+      const params = new URLSearchParams(hash.slice(1));
+      const accessToken = params.get('access_token');
+      const idToken = params.get('id_token');
+      const redirectPath = params.get('state');
+
+      if (accessToken && idToken) {
+        sessionStorage.setItem('access_token', accessToken);
+        sessionStorage.setItem('id_token', idToken);
+
+        window.location.hash = '';
+
+        if (redirectPath === 'create') createRoom();
+        else navigateTo(`/${redirectPath}`, { replace: true });
+      }
+    }
+  }, []);
+
+  if (loggingIn) return <h2>Logging you in...</h2>
 
   return (
     <main className='room-choose v-container'>
@@ -21,17 +56,8 @@ export default function RoomChoose() {
         onSubmit={
           event => {
             event.preventDefault();
-            fetch(`${api}rooms/create`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                ownerId: 1, // TODO link to cofnito
-                roomName: ':)',
-                closed: false,
-              }),
-            })
-              .then(response => response.json())
-              .then(data => handleSignIn(`room/${data.roomUuid}`));
+            if (sessionStorage.getItem('access_token')) createRoom();
+            else handleSignIn('create');
           }
         }
       >
@@ -44,7 +70,7 @@ export default function RoomChoose() {
           event => {
             event.preventDefault();
             const form = new FormData(event.target);
-            handleSignIn(`room/${form.get('code')}`);
+            if (sessionStorage.getItem('access_token')) { navigateTo(`room/${form.get('code')}`); } else { handleSignIn(`room/${form.get('code')}`); }
           }
         }
       >

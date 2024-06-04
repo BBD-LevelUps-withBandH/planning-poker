@@ -14,7 +14,6 @@ import PropTypes from 'prop-types';
  * @returns {JSX.Element} Agenda Component
  */
 export default function Agenda({ tickets, setTickets, currentTopic, userInRoomDetails, votes, room }) {
-
   /**
    * @param {object} value - array element
    * @param {string} value.ticketName - displayed ticket name

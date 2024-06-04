@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import UserChoice from '../UserChoice/UserChoice.jsx';
 import Agenda from '../Agenda/Agenda.jsx';
 import { api } from '../backend.js';
+import handleSignIn from '../handleSignIn.js';
 
 /**
  *
@@ -51,19 +52,18 @@ export default function Room() {
   };
 
   useEffect(() => {
-    fetch(`${api}rooms/${id}`)
-      .then(response => {
-        if (response.statusCode === 404) throw response;
-        return response.json();
-      })
-      .then(setRoom)
-      .catch(setNotFound);
-  }, []);
-
-  useEffect(() => {
-    fetch(`${api}vote-types`)
-      .then(response => response.json())
-      .then(setChoices);
+    if (sessionStorage.getItem('access_token')) {
+      fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } },)
+        .then(response => {
+          if (response.statusCode === 404) throw response;
+          return response.json();
+        })
+        .then(setRoom)
+        .catch(setNotFound);
+      fetch(`${api}vote-types`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } },)
+        .then(response => response.json())
+        .then(setChoices);
+    } else { handleSignIn(`room/${id}`); }
   }, []);
 
   useEffect(() => {
@@ -72,8 +72,10 @@ export default function Room() {
         `${api}rooms/${id}/users`,
         {
           method: 'POST',
-          body: JSON.stringify({ userId: 1 }), // TODO integrate with cognito
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json',
+          },
         },
       )
         .then(response => response.json())
@@ -86,24 +88,24 @@ export default function Room() {
 
       let polling = true;
 
-      const pollUsersInRoom = () => fetch(`${api}rooms/${id}/users`)
+      const pollUsersInRoom = () => fetch(`${api}rooms/${id}/users`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } })
         .then(response => response.json())
         .then(setUsers)
         .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
         .then(() => polling && pollUsersInRoom());
 
-      // const pollCurrentTopic = () => fetch('topic')
+      // const pollCurrentTopic = () => fetch('topic', { headers: { Authorization : `Bearer ${sessionStorage.getItem('access_token')}` } })
       //   .then(response => response.json())
       //   .then(setTopic)
       //   .then(() => new Promise(resolve => setTimeout(() => resolve(), pollTimeMs)))
       //   .then(() => polling && pollCurrentTopic());
 
-      const pollTickets = () => fetch(`${api}rooms/${id}/tickets`)
+      const pollTickets = () => fetch(`${api}rooms/${id}/tickets`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } })
         .then(response => response.json())
         .then(tickets => {
           setTickets(tickets);
           setTopic(tickets[1]);
-          return Promise.all(tickets.map(({ ticketId }) => fetch(`${api}votes/ticket/${ticketId}`).then(response => response.json())));
+          return Promise.all(tickets.map(({ ticketId }) => fetch(`${api}votes/ticket/${ticketId}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } }).then(response => response.json())));
         })
         .then(ticketVotes => ticketVotes.flat())
         .then(setVotes)
@@ -157,7 +159,7 @@ export default function Room() {
           }
         </ul>
         {
-          room.ownerId !== userInRoomDetails?.userId && topic
+          room.ownerId !== userInRoomDetails.userId && topic
           && <form
             className='container'
             onSubmit={
@@ -165,7 +167,10 @@ export default function Room() {
                 event.preventDefault();
                 fetch(`${api}votes/create`, {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json',
+                  },
                   body: JSON.stringify({
                     userInRoomId: userInRoomDetails.userInRoomId,
                     voteTypeId: choice.voteTypeId,
@@ -196,7 +201,7 @@ export default function Room() {
           </form>
         }
         {
-          room.ownerId === userInRoomDetails?.userId && canReveal(hidden, users, topic)
+          room.ownerId === userInRoomDetails.userId && canReveal(hidden, users, topic)
             ? (
               <button
                 type='button'
@@ -212,7 +217,7 @@ export default function Room() {
             : null
         }
         {
-          room.ownerId === userInRoomDetails?.userId && canChangeTopic(hidden, tickets, topic)
+          room.ownerId === userInRoomDetails.userId && canChangeTopic(hidden, tickets, topic)
             ? (
               <button
                 type='button'
