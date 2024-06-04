@@ -31,7 +31,8 @@ const updateTicketReveal = async (ticketId, revealed) => {
   WHERE ticket_id = $2
 `;
 
-  await client.query(query, [revealed, ticketId]);
+  let result = await client.query(query, [revealed, ticketId]);
+  return {ticketId: ticketId};
 }
 
 module.exports = {

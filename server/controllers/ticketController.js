@@ -17,8 +17,8 @@ function ticketController(router) {
     '/update', verifyToken,
     handleErrors(async (req, res) => {
       const { ticketId, revealed } = req.body;
-      await updateTicketReveal(ticketId, revealed);
-      res.status(204);
+      let ticketID = await updateTicketReveal(ticketId, revealed);
+      res.status(201).json(ticketID);
     })
   );
 }
