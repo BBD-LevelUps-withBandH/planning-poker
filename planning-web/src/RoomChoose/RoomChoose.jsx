@@ -39,8 +39,8 @@ export default function RoomChoose({ setUser, user }) {
 
       if (accessToken && idToken) {
         setLoggingIn(true);
-        window.location.hash = '';
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
+          window.location.hash = '';
 
           sessionStorage.setItem('access_token', accessToken);
           sessionStorage.setItem('id_token', idToken);
@@ -58,7 +58,8 @@ export default function RoomChoose({ setUser, user }) {
               if (redirectPath === 'create') createRoom();
               else navigateTo(`/${redirectPath}`, { replace: true });
             });
-        }, 50);
+        }, 100);
+        return () => clearTimeout(timeout);
       }
     }
   }, []);

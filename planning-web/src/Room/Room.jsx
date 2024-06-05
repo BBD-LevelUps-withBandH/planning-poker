@@ -36,17 +36,20 @@ export default function Room({ user }) {
   }, [roomPollData, tickets]);
 
   useEffect(() => {
-    if (user) {
-      fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
-        .then(response => {
-          if (response.statusCode === 404) throw response;
-          return response.json();
-        })
-        .then(setRoom)
-        .catch(setNotFound);
-      fetch(`${api}vote-types`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
-        .then(response => response.json())
-        .then(setChoices);
+    if (sessionStorage.getItem('id_token')) {
+      const timeout = setTimeout(() => {
+        fetch(`${api}rooms/${id}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
+          .then(response => {
+            if (response.statusCode === 404) throw response;
+            return response.json();
+          })
+          .then(setRoom)
+          .catch(setNotFound);
+        fetch(`${api}vote-types`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
+          .then(response => response.json())
+          .then(setChoices);
+      }, 50);
+      return () => clearTimeout(timeout);
     } else { handleSignIn(`room/${id}`); }
   }, []);
 
@@ -105,6 +108,8 @@ export default function Room({ user }) {
     room,
     user,
   ]);
+
+  if (!user) return  <h2>Logging you in...</h2>;
 
   if (notFound || !room) return <h2>Nothing here pal, soz</h2>;
 
