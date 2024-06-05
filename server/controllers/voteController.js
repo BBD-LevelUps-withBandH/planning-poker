@@ -1,4 +1,4 @@
-const { getVotesByTicketId, createVote } = require('../data/voteRepository');
+const { getVotesByTicketId, createVote, isUserInRoom } = require('../data/voteRepository');
 const { handleErrors } = require('../middlewares/errorHandler');
 const verifyToken  = require('../middlewares/auth-middleware.js');
 
@@ -17,8 +17,13 @@ function voteController(router) {
     '/create', verifyToken,
     handleErrors(async (req, res) => {
       const { userInRoomId, voteTypeId, ticketId } = req.body;
-      const newVote = await createVote(userInRoomId, voteTypeId, ticketId);
-      res.status(201).json(newVote);
+      const upn = req.upn;
+      if(await isUserInRoom(userInRoomId, upn)){
+        const newVote = await createVote(userInRoomId, voteTypeId, ticketId);
+        res.status(201).json(newVote);
+      } else {
+        res.status(404).send();
+      }
     })
   );
 }
