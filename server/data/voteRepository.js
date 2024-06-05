@@ -30,7 +30,7 @@ const isUserInRoom = async (userInRoomId, upn) => {
   SELECT room_id from users_in_rooms where user_in_room_id=$1 and user_id=(select user_id from users where upn=$2)
   `;
   const result = await client.query(query, [userInRoomId, upn]);
-  const row = result.row[0];
+  const row = result.rows[0];
   return row ? true : false;
 }
 
