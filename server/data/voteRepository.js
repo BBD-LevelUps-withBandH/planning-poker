@@ -15,8 +15,8 @@ const getVotesByTicketId = async (ticketId) => {
 
 const createVote = async (userInRoomId, voteTypeId, ticketId) => {
   const result = await client.query(
-    `INSERT INTO ${tableName} (user_in_room_id, vote_type_id, ticket_id) VALUES ($1, $2, $3)
-    ON CONFLICT (user_in_room_id) 
+    ` INSERT INTO ${tableName} (user_in_room_id, vote_type_id, ticket_id) VALUES ($1, $2, $3)
+    ON CONFLICT 
     DO UPDATE SET vote_type_id = $2
     RETURNING *;`,
     [userInRoomId, voteTypeId, ticketId]
