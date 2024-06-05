@@ -28,7 +28,7 @@ export default function Room({ user }) {
   const getChoice = userInRoomId => {
     const vote = votes.find(vote => vote.ticketId === topic?.ticketId && userInRoomId === vote.userInRoomId);
     if (!vote) return;
-    return choices.find(choice => choice.voteTypeId === vote.voteId);
+    return choices.find(choice => choice.voteTypeId === vote.voteTypeId);
   };
 
   useEffect(() => {
