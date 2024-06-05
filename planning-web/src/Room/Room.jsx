@@ -140,7 +140,7 @@ export default function Room({ user }) {
           }
         </ul>
         {
-          room.owner !== user.upn && topic
+          room.owner !== user.upn && topic && !topic.revealed
           && <form
             className='container'
             onSubmit={
