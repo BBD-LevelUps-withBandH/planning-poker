@@ -23,7 +23,7 @@ const createVote = async (userInRoomId, voteTypeId, ticketId) => {
   );
   const row = result.rows[0];
   return new Vote(row.vote_id, row.user_in_room_id, row.vote_type_id, row.ticket_id);
-};
+}; 
 
 const isUserInRoom = async (userInRoomId, upn) => {
   const query = `
