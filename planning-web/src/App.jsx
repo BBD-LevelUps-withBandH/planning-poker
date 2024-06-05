@@ -13,7 +13,7 @@ export default function App() {
 
   useEffect(() => {
     if (sessionStorage.getItem('id_token') && !user) {
-      fetch(`${api}users/create`, {
+      const timeout = setTimeout(() => fetch(`${api}users/create`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
@@ -21,7 +21,8 @@ export default function App() {
         },
       })
         .then(response => response.json())
-        .then(setUser);
+        .then(setUser), 50);
+      return () => clearTimeout(timeout);
     }
   }, []);
   return (
