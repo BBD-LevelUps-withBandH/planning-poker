@@ -34,9 +34,19 @@ const isUserInRoom = async (userInRoomId, upn) => {
   return row ? true : false;
 }
 
+const isTicketNotRevealed = async (ticketId) => {
+  const query = `
+  SELECT * from tickets where ticket_id=$1 and revealed='0'
+  `;
+  const result = await client.query(query, [ticketId]);
+  const row = result.rows[0];
+  return row ? true : false;
+}
+
 module.exports = {
   getAllVotes,
   getVotesByTicketId,
   createVote,
   isUserInRoom,
+  isTicketNotRevealed,
 };
