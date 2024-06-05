@@ -39,24 +39,26 @@ export default function RoomChoose({ setUser, user }) {
 
       if (accessToken && idToken) {
         setLoggingIn(true);
-        sessionStorage.setItem('access_token', accessToken);
-        sessionStorage.setItem('id_token', idToken);
-
         window.location.hash = '';
+        setTimeout(() => {
 
-        fetch(`${api}users/create`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
-            'Content-Type': 'application/json',
-          },
-        })
-          .then(response => response.json())
-          .then(userData => {
-            setUser(userData);
-            if (redirectPath === 'create') createRoom();
-            else navigateTo(`/${redirectPath}`, { replace: true });
-          });
+          sessionStorage.setItem('access_token', accessToken);
+          sessionStorage.setItem('id_token', idToken);
+
+          fetch(`${api}users/create`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem('id_token')}`,
+              'Content-Type': 'application/json',
+            },
+          })
+            .then(response => response.json())
+            .then(userData => {
+              setUser(userData);
+              if (redirectPath === 'create') createRoom();
+              else navigateTo(`/${redirectPath}`, { replace: true });
+            });
+        }, 50);
       }
     }
   }, []);
