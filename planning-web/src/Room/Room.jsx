@@ -82,7 +82,7 @@ export default function Room({ user }) {
       const pollTickets = () => fetch(`${api}rooms/${id}/tickets`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } })
         .then(response => response.json())
         .then(tickets => {
-          setTickets(tickets);
+          setTickets(tickets.toSorted((a,b) => a.ticketId - b.ticketId));
           return Promise.all(tickets.map(({ ticketId }) => fetch(`${api}votes/ticket/${ticketId}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('id_token')}` } }).then(response => response.json())));
         })
         .then(ticketVotes => ticketVotes.flat())
