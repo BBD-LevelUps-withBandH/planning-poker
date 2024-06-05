@@ -1,1 +1,1 @@
-export const api = 'https://api.planning-poker.projects.bbdgrad.com/';
+export const api = import.meta.env.VITE_BACKEND_URI;

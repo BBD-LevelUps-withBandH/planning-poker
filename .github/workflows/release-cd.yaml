@@ -1,7 +1,7 @@
 name: Release
 
 on:
-  workflow_call: 
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
       working-directory: ./planning-web
       shell: bash
       run: |
-        echo -e "VITE_COGNITO_DOMAIN=${{ secrets.VITE_COGNITO_DOMAIN }}\nVITE_REDIRECT_URI=${{ secrets.VITE_REDIRECT_URI }}\nVITE_CLIENT_ID=${{ secrets.VITE_CLIENT_ID }}" > .env
+        echo -e "VITE_COGNITO_DOMAIN=${{ secrets.VITE_COGNITO_DOMAIN }}\nVITE_REDIRECT_URI=${{ secrets.VITE_REDIRECT_URI }}\nVITE_CLIENT_ID=${{ secrets.VITE_CLIENT_ID }}\nVITE_BACKEND_URI=${{ secrets.VITE_BACKEND_URI }}" > .env
         cat .env
 
     - name: Install Dependencies
@@ -40,7 +40,7 @@ jobs:
         aws s3 rm --recursive s3://434468814231-poker
         aws s3 cp ./planning-web/dist s3://434468814231-poker --recursive
 
-        
+
   backend-deploy:
     name: Backend Deploy
     runs-on: ubuntu-latest
