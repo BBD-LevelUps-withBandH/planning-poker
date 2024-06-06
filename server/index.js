@@ -8,7 +8,7 @@ const cors = require("cors");
 const app = express();
 const port = 8080;
 
-app.use(cors({ origin: 'https://planning-poker.projects.bbdgrad.com' }));
+app.use(cors({ origin: process.env.FRONTEND_URL }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true}));
 

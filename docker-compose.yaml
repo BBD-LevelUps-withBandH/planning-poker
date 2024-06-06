@@ -1,0 +1,55 @@
+services:
+  #  DATABASE
+  db:
+    image: postgres:alpine
+    container_name: postgres_db
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: poker
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - ./database/tableCreates.sql:/docker-entrypoint-initdb.d/1.sql
+      - ./database/tableAlters.sql:/docker-entrypoint-initdb.d/2.sql
+    networks:
+      - poker-net
+
+  # BACKEND
+  backend:
+    build:
+      context: ./server
+      dockerfile: ./Dockerfile
+    environment:
+      FRONTEND_URL: 'http://localhost:4173'
+      DEBUG: true
+      DB_URL: db
+      DB_USERNAME: admin
+      DB_PASSWORD: pass
+    ports:
+      - 5000:8080
+    depends_on:
+      db:
+        condition: service_started
+    networks:
+      - poker-net
+
+  # FRONTEND
+  frontend:
+    depends_on:
+      db:
+        condition: service_started
+      backend:
+        condition: service_started
+    build:
+      context: ./planning-web
+      dockerfile: ./Dockerfile
+    ports:
+      - 4173:4173
+    networks:
+      - poker-net
+
+networks:
+  poker-net:
+    driver: bridge
