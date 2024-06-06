@@ -12,3 +12,6 @@ localhost:5000
 Frontend available at:
 localhost:4173
 
+https://planning-poker.projects.bbdgrad.com/
+https://api.planning-poker.projects.bbdgrad.com/
+
