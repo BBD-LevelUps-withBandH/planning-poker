@@ -11,9 +11,9 @@ let client;
 
 if(debug_mode){
   client = new Client({
-    user: "postgres",
+    user: process.env.DB_USERNAME,
     host: process.env.DB_URL,
-    database: 'poker',
+    database: process.env.DB,
     password: process.env.DB_PASSWORD,
     port: 5432,
   });
