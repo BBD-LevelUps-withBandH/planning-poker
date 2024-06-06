@@ -3,11 +3,25 @@ const { getAllUsersInRoom, addUserToRoom } = require('../data/userInRoomReposito
 const { handleErrors } = require('../middlewares/errorHandler');
 const { getAllTicketsInRoom } = require('../data/ticketRepository');
 const verifyToken  = require('../middlewares/auth-middleware.js');
+const { rateLimit } = require("express-rate-limit");
+
+const roomCreationLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  limit: 10, // each IP can make up to 10 requests per `windowsMs` (5 minutes)
+  standardHeaders: true, // add the `RateLimit-*` headers to the response
+  legacyHeaders: false, // remove the `X-RateLimit-*` headers from the response
+});
+const ticketLimiter = rateLimit({
+  windowMs:  60 * 1000, // 1 minute
+  limit: 10, // each IP can make up to 10 requests per `windowsMs` (1 minutes)
+  standardHeaders: true, // add the `RateLimit-*` headers to the response
+  legacyHeaders: false, // remove the `X-RateLimit-*` headers from the response
+});
 
 function roomController(router) {
 
   router.post(
-    '/create', verifyToken,
+    '/create', verifyToken, roomCreationLimiter,
     handleErrors(async (req, res) => {
       const { roomName, closed } = req.body;
       const upn = req.upn;
@@ -35,7 +49,7 @@ function roomController(router) {
   );
 
   router.post(
-    '/:uuid/users', verifyToken,
+    '/:uuid/users', verifyToken,roomCreationLimiter,
     handleErrors(async (req, res) => {
       const roomUuid = req.params.uuid;
       const upn = req.upn;
@@ -54,7 +68,7 @@ function roomController(router) {
   );
 
   router.post(
-    '/:uuid/ticket', verifyToken,
+    '/:uuid/ticket', verifyToken,ticketLimiter,
     handleErrors(async (req, res) => {
       const roomUuid = req.params.uuid;
       const {ticketId} = req.body;
