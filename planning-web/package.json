@@ -11,7 +11,7 @@
     "build": "yarn install --check-files && vite build",
     "lint": "npx eslint \"**/*.{js,jsx}\"",
     "lint:fix": "npx eslint \"**/*.{js,jsx}\" --fix",
-    "preview": "vite preview"
+    "preview": "vite preview --host"
   },
   "dependencies": {
     "prop-types": "^15.8.1",

@@ -10,6 +10,12 @@ services:
       POSTGRES_DB: poker
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: pass
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d poker"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     volumes:
       - ./database/tableCreates.sql:/docker-entrypoint-initdb.d/1.sql
       - ./database/tableAlters.sql:/docker-entrypoint-initdb.d/2.sql
@@ -24,6 +30,7 @@ services:
     environment:
       FRONTEND_URL: 'http://localhost:4173'
       DEBUG: true
+      DB: poker
       DB_URL: db
       DB_USERNAME: admin
       DB_PASSWORD: pass
@@ -31,7 +38,7 @@ services:
       - 5000:8080
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
     networks:
       - poker-net
 
