@@ -19,6 +19,7 @@ services:
     volumes:
       - ./database/tableCreates.sql:/docker-entrypoint-initdb.d/1.sql
       - ./database/tableAlters.sql:/docker-entrypoint-initdb.d/2.sql
+      - ./database/realData.sql:/docker-entrypoint-initdb.d/3.sql
     networks:
       - poker-net
 
