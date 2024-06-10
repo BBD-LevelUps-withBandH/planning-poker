@@ -14,7 +14,7 @@ export default function UserChoice({ name, choice, hidden }) {
   return (
     <li className='user-choice v-container-h'>
       <p>{name}</p>
-      {choice ? <figure className={ `v-container-hv${hidden ? ' hidden' : ''}` }>{choice.vote}</figure> : <div />}
+      {choice ? <figure className={ `v-container-hv${hidden ? ' hidden' : ''}` }>{choice.vote}</figure> : <div className='v-container'><p>empty</p></div>}
     </li>
   );
 }
