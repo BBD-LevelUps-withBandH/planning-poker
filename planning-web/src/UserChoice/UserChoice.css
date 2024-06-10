@@ -1,6 +1,12 @@
 .user-choice {
     perspective: 1000px;
 
+    &>p {
+        max-width: 7em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
 
     &>figure,
     &>div {
