@@ -66,43 +66,66 @@ export default function RoomChoose({ setUser, user }) {
   if (loggingIn) return <h2>Logging you in...</h2>;
 
   return (
-    <main className='room-choose v-container'>
-      <form
-        className='v-container'
-        onSubmit={
-          event => {
-            event.preventDefault();
-            if (user) createRoom();
-            else handleSignIn('create');
+    <main className='room-choose container'>
+      <section className='container'>
+
+        <form
+          className='v-container'
+          onSubmit={
+            event => {
+              event.preventDefault();
+              if (user) createRoom();
+              else handleSignIn('create');
+            }
           }
-        }
-      >
-        <h2>Create a room</h2>
-        <button type='submit'>Create</button>
-      </form>
-      <form
-        className='v-container'
-        onSubmit={
-          event => {
-            event.preventDefault();
-            const form = new FormData(event.target);
-            if (sessionStorage.getItem('id_token')) { navigateTo(`room/${form.get('code')}`); } else { handleSignIn(`room/${form.get('code')}`); }
+        >
+          <h2>Create a room</h2>
+          <article className='v-container'>
+            <p>Simply click the button below, and your room will be ready for your team to join and start estimating in
+              no
+              time. </p>
+            <p>Whether you're planning a sprint, breaking down tasks, or aligning on project priorities, this tool
+              ensures a smooth and interactive experience.</p>
+            <p> Get started now and make your estimation sessions more
+              effective and fun!</p>
+          </article>
+          <button type='submit'>Create</button>
+        </form>
+        <form
+          className='v-container'
+          onSubmit={
+            event => {
+              event.preventDefault();
+              const form = new FormData(event.target);
+              if (sessionStorage.getItem('id_token')) {
+                navigateTo(`room/${form.get('code')}`);
+              } else {
+                handleSignIn(`room/${form.get('code')}`);
+              }
+            }
           }
-        }
-      >
-        <h2>Join a room</h2>
-        <label className='container-v'>
-          <p>Room Code:</p>
-          <input
-            type='text'
-            name='code'
-            required
-          />
-        </label>
-        <button type='submit'>Join</button>
-      </form>
+        >
+          <h2>Join a room</h2>
+          <article className='v-container'>
+            <p>Just enter the room details provided by your session host, and you’ll be seamlessly connected to your
+              team’s virtual space.</p>
+            <p> Whether you're planning a sprint or assessing project priorities, joining a Planning
+              Poker session has never been easier.</p>
+            <p> Get started now and contribute to your team’s success!</p>
+          </article>
+          <label className='container-v'>
+            <p>Room Code:</p>
+            <input
+              type='text'
+              name='code'
+              required
+            />
+          </label>
+          <button type='submit'>Join</button>
+        </form>
+      </section>
     </main>
   );
 }
 
-RoomChoose.propTypes = { setUser: PropTypes.func };
+RoomChoose.propTypes = {setUser: PropTypes.func};
