@@ -1,11 +1,30 @@
 .room-choose {
-    margin-left: 10vw;
     flex: 1 1 0;
     justify-content: center;
-    gap: 4em;
+    align-items: center;
+    padding: 2em;
 
-    &>form {
+    &>section {
+        flex-wrap: wrap;
+        gap: 2em;
+        justify-content: center;
+    }
+
+    & form {
+        flex: 1 1 20rem;
+        background-color: rgba(0, 0, 0, 5%);
+        align-items: center;
+        padding: 1em;
+        border-radius: 1em;
         gap: 1em;
+
+        &>p {
+            padding: 1em;
+        }
+
+        &>article {
+            gap: .5em;
+        }
 
         &>label {
             flex-wrap: wrap;
@@ -18,8 +37,16 @@
         }
 
         &>button {
+            margin-top: auto;
             padding: .5em 1em;
             align-self: flex-start;
         }
+    }
+}
+
+.dark .room-choose {
+    & form {
+
+        background-color: rgba(255, 255, 255, 5%);
     }
 }
