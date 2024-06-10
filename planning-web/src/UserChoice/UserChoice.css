@@ -7,9 +7,10 @@
         text-overflow: ellipsis;
     }
 
-
     &>figure,
     &>div {
+        align-items: center;
+        justify-content: center;
         transition: all ease-out 100ms, rotate ease-out 1s;
         width: var(--card-width);
         aspect-ratio: var(--card-ratio);
@@ -21,6 +22,10 @@
 
         &.hidden {
             rotate: Y .5turn;
+        }
+
+        &>p {
+            font-size: 50%;
         }
     }
 
